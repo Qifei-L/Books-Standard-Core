@@ -24,8 +24,8 @@ export function InvoiceDetail({ invoice, actions, taxLabel }: InvoiceDetailProps
     <div className="space-y-4">
       <InvoiceDetailHeader invoice={invoice} amountDue={amountDue} actions={actions} />
       <InvoiceKpiStrip invoice={invoice} />
-      <InvoiceRelatedDocuments invoice={invoice} />
       <InvoiceLineItemsTable invoice={invoice} amountPaid={amountPaid} taxLabel={taxLabel} />
+      <InvoiceRelatedDocuments invoice={invoice} />
       <InvoicePaymentsSection
         invoiceId={invoice.id}
         amountDue={amountDue}

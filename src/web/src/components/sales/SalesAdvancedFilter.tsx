@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ListFilter, X } from 'lucide-react'
 import {
   formatInvoiceDateFilterLabel,
@@ -97,10 +97,6 @@ export function SalesAdvancedFilterButton({
   const draftDirty = !advancedFiltersEqual(draft, query)
   const draftActiveCount = countAdvancedFilters(draft)
 
-  useEffect(() => {
-    if (open) setDraft(query)
-  }, [open, query])
-
   const patchDraft = (patch: Partial<SalesAdvancedFilterState>) => {
     setDraft((prev) => ({ ...prev, ...patch }))
   }
@@ -121,7 +117,9 @@ export function SalesAdvancedFilterButton({
   }
 
   const handleOpenChange = (next: boolean) => {
-    if (!next && draftDirty) {
+    if (next) {
+      setDraft(query)
+    } else if (draftDirty) {
       setDraft(query)
     }
     setOpen(next)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,11 +20,6 @@ export function SalesSettingsPage() {
   const { settings, saveSettings } = useSalesSettings()
   const [draft, setDraft] = useState<SalesSettings>(settings)
   const [saved, setSaved] = useState(false)
-
-  useEffect(() => {
-    setDraft(settings)
-    setSaved(false)
-  }, [settings])
 
   const isDirty = !settingsEqual(draft, settings)
 

@@ -8,25 +8,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function SettingsPanel() {
   const { isOpen, settings, closeSettings, saveSettings } = useSettings()
+
+  if (!isOpen) return null
+
+  return (
+    <SettingsPanelContent
+      key={JSON.stringify(settings)}
+      settings={settings}
+      closeSettings={closeSettings}
+      saveSettings={saveSettings}
+    />
+  )
+}
+
+function SettingsPanelContent({
+  settings,
+  closeSettings,
+  saveSettings,
+}: {
+  settings: CompanySettings
+  closeSettings: () => void
+  saveSettings: (next: CompanySettings) => void
+}) {
   const [draft, setDraft] = useState<CompanySettings>(settings)
 
   useEffect(() => {
-    if (isOpen) {
-      setDraft(settings)
-    }
-  }, [isOpen, settings])
-
-  useEffect(() => {
-    if (!isOpen) return
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeSettings()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isOpen, closeSettings])
-
-  if (!isOpen) return null
+  }, [closeSettings])
 
   const isDirty =
     draft.companyName !== settings.companyName ||

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TemplatePreview } from '@/components/sales/TemplatePreview'
@@ -19,16 +19,17 @@ import { useSettings } from '@/contexts/SettingsContext'
 
 export function TemplateEditPage() {
   const { id } = useParams()
+
+  return <TemplateEditForm key={id ?? 'missing'} id={id} />
+}
+
+function TemplateEditForm({ id }: { id?: string }) {
   const navigate = useNavigate()
   const { getTemplate, updateTemplate } = useDocumentTemplates()
   const { settings: company } = useSettings()
   const template = id ? getTemplate(id) : undefined
   const [draft, setDraft] = useState<DocumentTemplate | null>(template ?? null)
   const [saved, setSaved] = useState(false)
-
-  useEffect(() => {
-    if (template) setDraft({ ...template })
-  }, [template])
 
   if (!id || !template || !draft) {
     return <Navigate to="/sales/templates" replace />

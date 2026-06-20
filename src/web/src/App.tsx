@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SettingsProvider } from '@/contexts/SettingsContext'
@@ -15,48 +16,48 @@ import {
   accountingSubNav,
   reportsSubNav,
 } from '@/config/navigation'
-import { LoginPage } from '@/pages/LoginPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { QuotationsPage } from '@/pages/QuotationsPage'
-import { QuotationDetailPage } from '@/pages/QuotationDetailPage'
-import { SalesOrdersPage, SalesOrderDetailPage } from '@/pages/SalesOrdersPage'
-import { InvoicesPage } from '@/pages/InvoicesPage'
-import { InvoiceDetailPage } from '@/pages/InvoiceDetailPage'
-import { InvoiceFormPage } from '@/pages/sales/InvoiceFormPage'
-import { DeliveryNoteFormPage } from '@/pages/sales/DeliveryNoteFormPage'
-import { DeliveryNotesPage } from '@/pages/sales/DeliveryNotesPage'
-import { DeliveryNoteDetailPage } from '@/pages/sales/DeliveryNoteDetailPage'
-import { PaymentsPage, PaymentDetailPage } from '@/pages/PaymentsPage'
-import { BillsPage } from '@/pages/BillsPage'
-import { PurchasesPaymentsPage } from '@/pages/PurchasesPaymentsPage'
-import { BankAccountsPage } from '@/pages/BankAccountsPage'
-import { BankReconciliationPage } from '@/pages/BankReconciliationPage'
-import { ChartOfAccountsPage } from '@/pages/ChartOfAccountsPage'
-import { ManualJournalsPage, JournalDetailPage } from '@/pages/ManualJournalsPage'
-import {
-  TrialBalancePage,
-  ProfitAndLossPage,
-  BalanceSheetPage,
-} from '@/pages/ReportsPage'
-import { PartnersPage } from '@/pages/PartnersPage'
-import { SalesOverviewPage } from '@/pages/sales/SalesOverviewPage'
-import {
-  CreditNotesPage,
-  RecurringInvoicesPage,
-} from '@/pages/sales/SalesPlaceholderPages'
-import { SalesReportsPage, SalesReportDetailPage } from '@/pages/sales/SalesReportsPage'
-import { SalesSettingsPage } from '@/pages/sales/SalesSettingsPage'
-import { TemplatesPage } from '@/pages/sales/TemplatesPage'
-import { TemplateEditPage } from '@/pages/sales/TemplateEditPage'
-import { TemplatePrintPage } from '@/pages/sales/TemplatePrintPage'
-import { ItemsPage } from '@/pages/products/ItemsPage'
-import { ItemDetailPage } from '@/pages/products/ItemDetailPage'
-import { ItemFormPage } from '@/pages/products/ItemFormPage'
-import { AdjustStockPage } from '@/pages/products/AdjustStockPage'
-import { AdjustmentDetailPage } from '@/pages/products/AdjustmentDetailPage'
-import { AdjustmentFormPage } from '@/pages/products/AdjustmentFormPage'
-import { PriceListsPage } from '@/pages/products/PriceListsPage'
-import { SettingsOpener } from '@/pages/SettingsOpener'
+const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const QuotationsPage = lazy(() => import('@/pages/QuotationsPage').then((m) => ({ default: m.QuotationsPage })))
+const QuotationDetailPage = lazy(() => import('@/pages/QuotationDetailPage').then((m) => ({ default: m.QuotationDetailPage })))
+const SalesOrdersPage = lazy(() => import('@/pages/SalesOrdersPage').then((m) => ({ default: m.SalesOrdersPage })))
+const SalesOrderDetailPage = lazy(() => import('@/pages/SalesOrdersPage').then((m) => ({ default: m.SalesOrderDetailPage })))
+const InvoicesPage = lazy(() => import('@/pages/InvoicesPage').then((m) => ({ default: m.InvoicesPage })))
+const InvoiceDetailPage = lazy(() => import('@/pages/InvoiceDetailPage').then((m) => ({ default: m.InvoiceDetailPage })))
+const InvoiceFormPage = lazy(() => import('@/pages/sales/InvoiceFormPage').then((m) => ({ default: m.InvoiceFormPage })))
+const DeliveryNoteFormPage = lazy(() => import('@/pages/sales/DeliveryNoteFormPage').then((m) => ({ default: m.DeliveryNoteFormPage })))
+const DeliveryNotesPage = lazy(() => import('@/pages/sales/DeliveryNotesPage').then((m) => ({ default: m.DeliveryNotesPage })))
+const DeliveryNoteDetailPage = lazy(() => import('@/pages/sales/DeliveryNoteDetailPage').then((m) => ({ default: m.DeliveryNoteDetailPage })))
+const PaymentsPage = lazy(() => import('@/pages/PaymentsPage').then((m) => ({ default: m.PaymentsPage })))
+const PaymentDetailPage = lazy(() => import('@/pages/PaymentsPage').then((m) => ({ default: m.PaymentDetailPage })))
+const BillsPage = lazy(() => import('@/pages/BillsPage').then((m) => ({ default: m.BillsPage })))
+const PurchasesPaymentsPage = lazy(() => import('@/pages/PurchasesPaymentsPage').then((m) => ({ default: m.PurchasesPaymentsPage })))
+const BankAccountsPage = lazy(() => import('@/pages/BankAccountsPage').then((m) => ({ default: m.BankAccountsPage })))
+const BankReconciliationPage = lazy(() => import('@/pages/BankReconciliationPage').then((m) => ({ default: m.BankReconciliationPage })))
+const ChartOfAccountsPage = lazy(() => import('@/pages/ChartOfAccountsPage').then((m) => ({ default: m.ChartOfAccountsPage })))
+const ManualJournalsPage = lazy(() => import('@/pages/ManualJournalsPage').then((m) => ({ default: m.ManualJournalsPage })))
+const JournalDetailPage = lazy(() => import('@/pages/ManualJournalsPage').then((m) => ({ default: m.JournalDetailPage })))
+const TrialBalancePage = lazy(() => import('@/pages/ReportsPage').then((m) => ({ default: m.TrialBalancePage })))
+const ProfitAndLossPage = lazy(() => import('@/pages/ReportsPage').then((m) => ({ default: m.ProfitAndLossPage })))
+const BalanceSheetPage = lazy(() => import('@/pages/ReportsPage').then((m) => ({ default: m.BalanceSheetPage })))
+const PartnersPage = lazy(() => import('@/pages/PartnersPage').then((m) => ({ default: m.PartnersPage })))
+const SalesOverviewPage = lazy(() => import('@/pages/sales/SalesOverviewPage').then((m) => ({ default: m.SalesOverviewPage })))
+const CreditNotesPage = lazy(() => import('@/pages/sales/SalesPlaceholderPages').then((m) => ({ default: m.CreditNotesPage })))
+const RecurringInvoicesPage = lazy(() => import('@/pages/sales/SalesPlaceholderPages').then((m) => ({ default: m.RecurringInvoicesPage })))
+const SalesReportsPage = lazy(() => import('@/pages/sales/SalesReportsPage').then((m) => ({ default: m.SalesReportsPage })))
+const SalesReportDetailPage = lazy(() => import('@/pages/sales/SalesReportsPage').then((m) => ({ default: m.SalesReportDetailPage })))
+const SalesSettingsPage = lazy(() => import('@/pages/sales/SalesSettingsPage').then((m) => ({ default: m.SalesSettingsPage })))
+const TemplatesPage = lazy(() => import('@/pages/sales/TemplatesPage').then((m) => ({ default: m.TemplatesPage })))
+const TemplateEditPage = lazy(() => import('@/pages/sales/TemplateEditPage').then((m) => ({ default: m.TemplateEditPage })))
+const TemplatePrintPage = lazy(() => import('@/pages/sales/TemplatePrintPage').then((m) => ({ default: m.TemplatePrintPage })))
+const ItemsPage = lazy(() => import('@/pages/products/ItemsPage').then((m) => ({ default: m.ItemsPage })))
+const ItemDetailPage = lazy(() => import('@/pages/products/ItemDetailPage').then((m) => ({ default: m.ItemDetailPage })))
+const ItemFormPage = lazy(() => import('@/pages/products/ItemFormPage').then((m) => ({ default: m.ItemFormPage })))
+const AdjustStockPage = lazy(() => import('@/pages/products/AdjustStockPage').then((m) => ({ default: m.AdjustStockPage })))
+const AdjustmentDetailPage = lazy(() => import('@/pages/products/AdjustmentDetailPage').then((m) => ({ default: m.AdjustmentDetailPage })))
+const AdjustmentFormPage = lazy(() => import('@/pages/products/AdjustmentFormPage').then((m) => ({ default: m.AdjustmentFormPage })))
+const PriceListsPage = lazy(() => import('@/pages/products/PriceListsPage').then((m) => ({ default: m.PriceListsPage })))
+const SettingsOpener = lazy(() => import('@/pages/SettingsOpener').then((m) => ({ default: m.SettingsOpener })))
 
 function RedirectQuoteDetail() {
   const { id } = useParams()
@@ -70,6 +71,7 @@ function App() {
         <SalesSettingsProvider>
         <DocumentTemplateProvider>
         <BrowserRouter>
+        <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
@@ -193,6 +195,7 @@ function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
         </BrowserRouter>
         </DocumentTemplateProvider>
         </SalesSettingsProvider>

@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ChevronDown, MoreHorizontal } from 'lucide-react'
 import { DetailBreadcrumb } from '@/components/shared/DocumentDetail'
-import { InvoiceDocumentView } from '@/components/sales/invoice/InvoiceDocumentView'
+import { InvoiceDetail } from '@/components/sales/invoice/InvoiceDetail'
 import {
   getInvoiceAllocations,
   getInvoiceAmounts,
@@ -106,7 +106,7 @@ export function InvoiceDetailPage() {
           { label: invoice.number },
         ]}
       />
-      <InvoiceDocumentView
+      <InvoiceDetail
         invoice={invoice}
         actions={<InvoiceDetailActions invoice={invoice} amountDue={amountDue} />}
       />

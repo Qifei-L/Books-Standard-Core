@@ -18,13 +18,14 @@ const expenseAccounts = accounts.filter((a) => a.type === 'Expense')
 
 export function ItemFormPage() {
   const { id } = useParams()
+
+  return <ItemForm key={id ?? 'new'} id={id} />
+}
+
+function ItemForm({ id }: { id?: string }) {
   const navigate = useNavigate()
   const isNew = !id
   const existing = !isNew ? getItem(id) : undefined
-
-  if (!isNew && !existing) {
-    return <Navigate to="/products/items" replace />
-  }
 
   const [code, setCode] = useState(existing?.code ?? '')
   const [name, setName] = useState(existing?.name ?? '')
@@ -40,6 +41,10 @@ export function ItemFormPage() {
 
   const save = () => {
     navigate(isNew ? '/products/items' : `/products/items/${id}`)
+  }
+
+  if (!isNew && !existing) {
+    return <Navigate to="/products/items" replace />
   }
 
   return (

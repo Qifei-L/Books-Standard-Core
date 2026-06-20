@@ -4,17 +4,32 @@
 
 ## 当前阶段：Phase 0 Mock 前端
 
-React + shadcn/ui 实现的演示界面，使用本地 Mock 数据，无需后端。
+两套独立前端实现，共享同一套 Mock 数据和领域模型：
+
+| 实现 | 目录 | 技术栈 | 端口 |
+|------|------|--------|------|
+| React（原始） | `src/web/` | React 18 + shadcn/ui + Tailwind + Vite | 5173 |
+| Angular（重构） | `src/ng/` | Angular 18 + Angular Material | 4200 |
+
+均使用本地 Mock 数据，无需后端，任意邮箱+密码即可登录。
 
 ## 快速启动
 
+**React 版本**
 ```bash
 cd src/web
 npm install
 npm run dev
+# 访问 http://localhost:5173
 ```
 
-浏览器打开 http://localhost:5173 ，任意邮箱密码即可登录。
+**Angular 版本**
+```bash
+cd src/ng
+npm install
+ng serve
+# 访问 http://localhost:4200
+```
 
 ## 文档
 
@@ -26,13 +41,22 @@ npm run dev
 
 ## 技术栈
 
-- **前端**：React 18, TypeScript, Vite, shadcn/ui, Tailwind CSS, TanStack Table, React Router
-- **后端（计划）**：.NET 8, ASP.NET Core, EF Core, SQLite → PostgreSQL
+**前端 React（src/web）**
+- React 18, TypeScript, Vite
+- shadcn/ui, Tailwind CSS, TanStack Table, React Router
+
+**前端 Angular（src/ng）**
+- Angular 18（Standalone Components）
+- Angular Material 18, Angular Router（Hash 模式）
+
+**后端（计划，Phase 1）**
+- .NET 8, ASP.NET Core, EF Core, SQLite → PostgreSQL
 
 ## 仓库结构
 
 ```
-docs/           产品与 design 文档
-src/web/        React Mock 前端
+docs/           产品与设计文档
+src/web/        React Mock 前端（Phase 0 原始实现）
+src/ng/         Angular Mock 前端（Phase 0 重构）
 src/api/        ASP.NET 后端（Phase 1，尚未实现）
 ```

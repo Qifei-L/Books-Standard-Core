@@ -4,15 +4,16 @@
 
 - **视觉**：参考 Xero — 干净、白底卡片、专业 SaaS 体验
 - **信息架构**：ERPNext 风格 — Dashboard / Sales / Purchases / Banking / Partners / Products / Accounting / Reports
-- **实现**：React + shadcn/ui + Tailwind
+- **React 实现**：shadcn/ui + Tailwind
+- **Angular 实现**：Angular Material 18
 
 ## 视觉规范
 
-| 项 | 值 |
-|----|-----|
-| 主色 | `#13B5EA`（Xero 蓝） |
-| 页面背景 | `#F5F6F8` |
-| 侧栏宽度 | 240px |
+| 项 | React 版 | Angular 版 |
+|----|---------|-----------|
+| 主色 | `#13B5EA`（Xero 蓝） | Material Indigo |
+| 页面背景 | `#F5F6F8` | `#f8f9fa` |
+| 侧栏宽度 | 240px | 220px |
 
 ## 导航结构
 
@@ -21,14 +22,13 @@ Dashboard: /
 Sales:
   - Overview: /sales/overview
   - Quotes: /sales/quotes
-  - Sales Orders (optional): /sales/sales-orders
+  - Sales Orders: /sales/orders
   - Sales Invoices: /sales/invoices
   - Receive Payments: /sales/payments
-  - Delivery Notes (optional): /sales/delivery-notes
+  - Delivery Notes: /sales/delivery-notes
   - Credit Notes: /sales/credit-notes
-  - Recurring Invoices: /sales/recurring-invoices
   - Sales Reports: /sales/reports
-  - Sales Settings: /sales/settings
+  - Settings: /sales/settings
 Purchases:
   - Bills: /purchases/bills
   - Payments Made: /purchases/payments
@@ -39,7 +39,7 @@ Business Partners: /partners
 Products & Services:
   - Items: /products/items
   - Adjust Stock: /products/adjustments
-  - Price Lists (optional): /products/price-lists
+  - Price Lists: /products/price-lists
 Accounting:
   - Chart of Accounts: /accounting/chart-of-accounts
   - Manual Journals: /accounting/manual-journals
@@ -47,30 +47,52 @@ Reports:
   - Trial Balance: /reports/trial-balance
   - Profit & Loss: /reports/profit-and-loss
   - Balance Sheet: /reports/balance-sheet
-Settings: /settings
 ```
 
 ## ERPNext 销售流程
 
 ```
 Partner → Quotation → Sales Order → Invoice → Payment Received
-                              ↘ (可选) Sales Delivery Note → COGS / Inventory
+                             ↘ (可选) Sales Delivery Note → COGS / Inventory
 Products → Inventory Adjustment（独立，不挂发票）
 ```
 
-### 单据详情页模式
+## 发票详情页设计
 
-**Invoice 详情**（`/sales/invoices/:id`）：
+### 当前设计（Angular 版，分组 Related Documents）
 
+```
+1. 页头：发票号 + 状态 Badge + 操作按钮（Edit / Send / Void）
+2. KPI 条：Issue Date / Due Date / Subtotal / Tax / Total / Amount Due
+3. Line items 表格 + 税额汇总
+4. Related Documents（一个 Card，四组）：
+   ┌─ QUOTATION ──────────────────────────────┐
+   │  QT-xxx   日期   状态 Badge              │
+   ├─ SALES ORDER ────────────────────────────┤
+   │  SO-xxx   日期   状态 Badge              │
+   ├─ DELIVERY NOTES ──────── [Create DN]     │
+   │  DN-xxx   日期   状态 Badge              │
+   ├─ PAYMENTS RECEIVED ──── [Record Payment] │
+   │  PAY-xxx  日期          ¥ 金额           │
+   │                 Total applied  ¥ 合计    │
+   └──────────────────────────────────────────┘
+```
+
+- 每组为空时显示「None」
+- 操作按钮仅在有意义时出现（未发货时显示 Create DN；有余额时显示 Record Payment）
+- 通用组件 `DocumentLinksSectionComponent`，接受 `groups: DocumentGroup[]`
+
+### 旧设计（React 版，分开展示）
+
+```
 1. 面包屑 + 标题 + 状态 Badge + 操作按钮
 2. KPI 条：Amount due / Total / Paid / 日期
-3. **Related documents**（轻列表，无 Card）：
-   - Source：Quote、Order（有则显示）
-   - Delivery：Shipment 状态、Create delivery note、DN 链接
+3. Related documents（轻列表，无 Card）：
+   - Source：Quote、Order 链接（有则显示）
+   - Delivery：Shipment 状态 + Create delivery note + DN 链接
 4. Line items 表格 + 税额汇总
-5. Payments & allocations 表格（含 Record payment）
-
-**其他单据**：Quote 等仍可用页头 `LinkedDocs` 横条显示下游链接。
+5. Payments & allocations（独立 Card + 表格，含 Record payment）
+```
 
 ## 列表页模式（Sales）
 
@@ -86,24 +108,21 @@ Invoices / Payments / Quotes / Sales Orders 共用：
 
 ### Dashboard `/`
 
-Widget：待办任务、本期盈亏、现金流图、应收/应付摘要、银行账户余额。
+Widget：待办任务、KPI（Revenue / Expenses / Net Profit / Receivables / Payables）
 
 ### Quotes `/sales/quotes`
 
-业务状态（策略 1，不含审批）：
-
-`Draft` → `Sent` → `Accepted` → `Converted to Invoice`  
-终态：`Declined` | `Expired` | `Converted to Invoice`
+业务状态：`Draft` → `Sent` → `Accepted` → `ConvertedToInvoice`  
+终态：`Declined` | `Expired` | `ConvertedToInvoice`
 
 ### Invoices `/sales/invoices`
 
 Tab 筛选：全部 / 草稿 / 待收款 / 已收款 / 逾期。  
-详情见上文 Related 轻列表 + Payments 表格。  
-新建页含 Item 选择器与 Tracked 行 DN 提示。
+详情见上方发票详情页设计。
 
 ### Delivery Notes `/sales/delivery-notes`
 
-客户发货单；billing status（Not invoiced / Invoiced）；COGS 预览。  
+客户发货单；billing status（not_invoiced / invoiced）；COGS 预览。  
 可从 Invoice Related 区「Create delivery note」带 `?invoice=` 预填。
 
 ### Products → Adjust Stock `/products/adjustments`
@@ -112,9 +131,7 @@ Tab 筛选：全部 / 草稿 / 待收款 / 已收款 / 逾期。
 
 ### Receive Payments `/sales/payments`
 
-单一收款入口：分配发票部分冲 **AR**；未分配部分记 **Customer Advances**。
-
-Tab：All / Applied / Advances only。
+分配发票部分冲 **AR**；未分配部分记 **Customer Advances**。
 
 ### Bills `/purchases/bills`
 
@@ -134,9 +151,12 @@ Tab：All / Applied / Advances only。
 
 ## Phase 0 交付标准
 
-- [x] 新导航结构（含 Products、Delivery Notes）可达
-- [x] Sales 列表统一壳
-- [x] Item + 库存单据 UI
-- [x] Invoice Related 轻列表
+- [x] 导航结构（含 Products、Delivery Notes）可达
+- [x] Sales 列表统一壳（React）
+- [x] Item + 库存单据 UI（React）
+- [x] Invoice Related Documents + Payments（React，分开展示）
+- [x] Angular 重构：登录 / 侧边栏 / 子导航 / 发票列表
+- [x] Angular 重构：发票详情（分组 Related Documents 新设计）
 - [ ] Credit Notes / Recurring 真实页面
+- [ ] Angular 其余详情页 / 表单页
 - [ ] 全部模块与后端 API 联调（Phase 1）

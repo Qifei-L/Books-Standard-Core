@@ -36,7 +36,6 @@ interface DocFlowRow {
     FormatDatePipe, FormatMoneyPipe,
   ],
   templateUrl: './invoice-detail.component.html',
-  styleUrl: './invoice-detail.component.scss',
 })
 export class InvoiceDetailComponent implements OnInit {
   private route = inject(ActivatedRoute)

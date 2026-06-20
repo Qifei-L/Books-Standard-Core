@@ -1,206 +1,223 @@
 @if (invoice) {
-<div class="pg">
+<div class="p-6 space-y-3">
 
-  <!-- ── TOP BAR ─────────────────────────────────────────────────────────── -->
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <span class="inv-num">{{ invoice.number }}</span>
-      <app-status-badge [status]="invoice.status" />
-    </div>
-    <div class="top-bar-actions">
-      <button mat-stroked-button>
-        <mat-icon>edit</mat-icon> Edit
-      </button>
-      <button mat-flat-button color="primary" [routerLink]="['/sales/payments/new']">
-        <mat-icon>payments</mat-icon> Payment
-      </button>
-      <button mat-stroked-button [routerLink]="['/sales/delivery-notes/new']">
-        <mat-icon>local_shipping</mat-icon> Delivery Note
-      </button>
-      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #moreMenu>
-        <button mat-menu-item><mat-icon>content_copy</mat-icon> Duplicate</button>
-        <button mat-menu-item><mat-icon>print</mat-icon> Print</button>
-        <mat-divider />
-        <button mat-menu-item class="warn-item"><mat-icon>block</mat-icon> Void</button>
-      </mat-menu>
-    </div>
-  </div>
+  <!-- ╔══ Card: main document ═══════════════════════════════════════════════╗ -->
+  <div class="card">
 
-  <!-- ── HEADER: Invoice Info + Bill To ──────────────────────────────────── -->
-  <div class="doc-header">
-    <div class="header-left">
-      <table class="info-table">
-        <tr>
-          <td class="info-label">Reference</td>
-          <td class="info-val">{{ invoice.salesOrderId ?? '—' }}</td>
-        </tr>
-        <tr>
-          <td class="info-label">Issue Date</td>
-          <td class="info-val">{{ invoice.date | formatDate }}</td>
-        </tr>
-        <tr>
-          <td class="info-label">Due Date</td>
-          <td class="info-val" [class.overdue]="dueMeta.isOverdue && amounts.amountDue > 0">
+    <!-- Top bar: document number + status + actions -->
+    <div class="flex items-center justify-between px-6 py-4 gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <h1 class="text-lg font-bold tracking-tight text-foreground truncate">{{ invoice.number }}</h1>
+        <app-status-badge [status]="invoice.status" />
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button class="btn btn-outline" type="button">Edit</button>
+        <button class="btn btn-default" type="button" [routerLink]="['/sales/payments/new']">
+          <mat-icon class="icon-sm">payments</mat-icon>Payment
+        </button>
+        <button class="btn btn-outline" type="button" [routerLink]="['/sales/delivery-notes/new']">
+          <mat-icon class="icon-sm">local_shipping</mat-icon>Delivery Note
+        </button>
+        <button class="btn btn-ghost btn-icon" type="button" [matMenuTriggerFor]="moreMenu">
+          <mat-icon class="icon-sm">more_vert</mat-icon>
+        </button>
+        <mat-menu #moreMenu>
+          <button mat-menu-item><mat-icon>content_copy</mat-icon>Duplicate</button>
+          <button mat-menu-item><mat-icon>print</mat-icon>Print</button>
+          <button mat-menu-item class="text-destructive"><mat-icon>block</mat-icon>Void</button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <div class="separator"></div>
+
+    <!-- Header: invoice meta (left) | Bill To (right) -->
+    <div class="grid grid-cols-2 px-6 py-5 border-b border-border">
+
+      <!-- Left: invoice fields -->
+      <div class="space-y-2 pr-8">
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-muted-foreground w-24 shrink-0">Reference</span>
+          <span class="text-sm text-foreground">{{ invoice.salesOrderId ?? '—' }}</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-muted-foreground w-24 shrink-0">Issue Date</span>
+          <span class="text-sm text-foreground">{{ invoice.date | formatDate }}</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-muted-foreground w-24 shrink-0">Due Date</span>
+          <span class="text-sm" [class.text-foreground]="!dueMeta.isOverdue || amounts.amountDue === 0"
+                                [class.text-destructive]="dueMeta.isOverdue && amounts.amountDue > 0">
             {{ invoice.dueDate | formatDate }}
-          </td>
-        </tr>
-        <tr>
-          <td class="info-label">Currency</td>
-          <td class="info-val">CNY</td>
-        </tr>
-        <tr>
-          <td class="info-label">Terms</td>
-          <td class="info-val">30 Days</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="header-right">
-      <div class="bill-to-label">BILL TO</div>
-      <div class="customer-name">{{ invoice.contactName }}</div>
-      <table class="info-table">
-        <tr>
-          <td class="info-label">VAT No</td>
-          <td class="info-val">—</td>
-        </tr>
-        <tr>
-          <td class="info-label">Address</td>
-          <td class="info-val">—</td>
-        </tr>
-        <tr>
-          <td class="info-label">Email</td>
-          <td class="info-val">{{ contact?.email ?? '—' }}</td>
-        </tr>
-        <tr>
-          <td class="info-label">Credit Terms</td>
-          <td class="info-val">—</td>
-        </tr>
-        <tr>
-          <td class="info-label">Outstanding</td>
-          <td class="info-val outstanding">{{ contact?.balance ?? 0 | formatMoney }}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── LINE ITEMS ────────────────────────────────────────────────────── -->
-  <mat-card appearance="outlined" class="body-card">
-    <table mat-table [dataSource]="invoice.lines" class="w-full">
-      <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td mat-cell *matCellDef="let l">
-          <div>{{ l.description }}</div>
-          @if (l.itemCode) { <div class="item-code">{{ l.itemCode }}</div> }
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="quantity">
-        <th mat-header-cell *matHeaderCellDef class="num">Qty</th>
-        <td mat-cell *matCellDef="let l" class="num muted">{{ l.quantity }}</td>
-      </ng-container>
-      <ng-container matColumnDef="unitPrice">
-        <th mat-header-cell *matHeaderCellDef class="num">Unit Price</th>
-        <td mat-cell *matCellDef="let l" class="num muted">{{ l.unitPrice | formatMoney }}</td>
-      </ng-container>
-      <ng-container matColumnDef="amount">
-        <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
-        <td mat-cell *matCellDef="let l" class="num">{{ l.amount | formatMoney }}</td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="lineCols"></tr>
-      <tr mat-row *matRowDef="let _; columns: lineCols"></tr>
-    </table>
-
-    <!-- Totals -->
-    <div class="totals-block">
-      <div class="totals-inner">
-        <div class="total-line">
-          <span class="tl-label muted">Subtotal</span>
-          <span class="tl-val num">{{ invoice.subtotal | formatMoney }}</span>
-        </div>
-        <div class="total-line">
-          <span class="tl-label muted">VAT</span>
-          <span class="tl-val num">{{ invoice.tax | formatMoney }}</span>
-        </div>
-        <div class="total-line total-sum">
-          <span class="tl-label">Total</span>
-          <span class="tl-val num">{{ invoice.total | formatMoney }}</span>
-        </div>
-        <div class="total-line">
-          <span class="tl-label muted">Paid</span>
-          <span class="tl-val num muted">{{ amounts.amountPaid | formatMoney }}</span>
-        </div>
-        <div class="total-line amount-due-line">
-          <span class="tl-label">Amount Due</span>
-          <span class="tl-val num" [class.overdue]="dueMeta.isOverdue">
-            {{ amounts.amountDue | formatMoney }}
           </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-muted-foreground w-24 shrink-0">Currency</span>
+          <span class="text-sm text-foreground">CNY</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-muted-foreground w-24 shrink-0">Terms</span>
+          <span class="text-sm text-foreground">30 Days</span>
+        </div>
+      </div>
+
+      <!-- Right: Bill To address block -->
+      <div class="pl-8 border-l border-border">
+        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Bill To</p>
+        <p class="text-sm font-semibold text-foreground mb-1">{{ invoice.contactName }}</p>
+        <p class="text-xs text-muted-foreground leading-relaxed">VAT —</p>
+        <p class="text-xs text-muted-foreground leading-relaxed">—</p>
+        <p class="text-xs text-muted-foreground leading-relaxed">{{ contact?.email ?? '—' }}</p>
+        <p class="text-xs text-muted-foreground mt-2">
+          Outstanding <span class="text-foreground font-semibold tabular-nums">{{ (contact?.balance ?? 0) | formatMoney }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div>
+      <p class="px-6 pt-4 pb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Line Items</p>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-y border-border bg-muted/40">
+            <th class="text-left text-xs font-medium text-muted-foreground h-9 px-6 py-0">Description</th>
+            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-4 py-0 w-16">Qty</th>
+            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-4 py-0 w-32">Unit Price</th>
+            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-6 py-0 w-32">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of invoice.lines; track l.id) {
+            <tr class="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+              <td class="px-6 py-2.5 align-top">
+                <span class="text-foreground">{{ l.description }}</span>
+                @if (l.itemCode) {
+                  <span class="block text-xs text-muted-foreground mt-0.5">{{ l.itemCode }}</span>
+                }
+              </td>
+              <td class="px-4 py-2.5 text-right text-muted-foreground tabular-nums">{{ l.quantity }}</td>
+              <td class="px-4 py-2.5 text-right text-muted-foreground tabular-nums">{{ l.unitPrice | formatMoney }}</td>
+              <td class="px-6 py-2.5 text-right tabular-nums font-medium">{{ l.amount | formatMoney }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Totals -->
+      <div class="flex justify-end px-6 py-4">
+        <div class="w-52 space-y-1">
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">Subtotal</span>
+            <span class="tabular-nums">{{ invoice.subtotal | formatMoney }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">VAT</span>
+            <span class="tabular-nums">{{ invoice.tax | formatMoney }}</span>
+          </div>
+          <div class="separator my-1.5"></div>
+          <div class="flex justify-between text-sm font-semibold">
+            <span>Total</span>
+            <span class="tabular-nums">{{ invoice.total | formatMoney }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">Paid</span>
+            <span class="tabular-nums text-muted-foreground">{{ amounts.amountPaid | formatMoney }}</span>
+          </div>
+          <div class="separator my-1.5"></div>
+          <div class="flex justify-between">
+            <span class="text-sm font-semibold">Amount Due</span>
+            <span class="text-base font-bold tabular-nums" [class.text-destructive]="dueMeta.isOverdue">
+              {{ amounts.amountDue | formatMoney }}
+            </span>
+          </div>
+          @if (dueMeta.dueLabel) {
+            <p class="text-right text-xs" [class.text-destructive]="dueMeta.isOverdue"
+                                          [class.text-muted-foreground]="!dueMeta.isOverdue">
+              {{ dueMeta.dueLabel }}
+            </p>
+          }
         </div>
       </div>
     </div>
-  </mat-card>
 
-  <!-- ── DOCUMENT FLOW ─────────────────────────────────────────────────── -->
-  <mat-expansion-panel class="section-panel" expanded>
-    <mat-expansion-panel-header>
-      <mat-panel-title class="panel-title">Document Flow</mat-panel-title>
-      <mat-panel-description class="flow-chips">
-        @if (quotation)               { <span class="flow-chip">Quote&nbsp;1</span> }
-        @if (salesOrder)              { <span class="flow-chip">Sales Order&nbsp;1</span> }
-        @if (deliveryNotes.length > 0){ <span class="flow-chip">Delivery Note&nbsp;{{ deliveryNotes.length }}</span> }
-        @if (paymentCount > 0)        { <span class="flow-chip">Payment&nbsp;{{ paymentCount }}</span> }
-      </mat-panel-description>
-    </mat-expansion-panel-header>
+  </div>
+  <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
 
-    @if (docFlowRows.length > 0) {
-      <table mat-table [dataSource]="docFlowRows" class="flow-table">
-        <ng-container matColumnDef="typeLabel">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let r">{{ r.typeLabel }}</td>
-        </ng-container>
-        <ng-container matColumnDef="number">
-          <th mat-header-cell *matHeaderCellDef>No</th>
-          <td mat-cell *matCellDef="let r">
-            <a [routerLink]="r.routerLink" class="doc-link">{{ r.number }}</a>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let r">
-            <app-status-badge [status]="r.status" />
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
-          <td mat-cell *matCellDef="let r" class="muted">{{ r.date | formatDate }}</td>
-        </ng-container>
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
-          <td mat-cell *matCellDef="let r" class="num">{{ r.amount | formatMoney }}</td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="flowCols"></tr>
-        <tr mat-row *matRowDef="let _; columns: flowCols"></tr>
-      </table>
-    } @else {
-      <p class="muted" style="padding: 8px 16px; font-size: 12px;">No linked documents.</p>
+  <!-- ── Accordion: Document Flow ─────────────────────────────────────────── -->
+  <div class="card">
+    <button type="button"
+            class="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-muted/50 transition-colors"
+            (click)="showFlow = !showFlow">
+      <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Document Flow</span>
+      <div class="flex items-center gap-2">
+        <!-- chips: shown only when collapsed -->
+        @if (!showFlow) {
+          @for (chip of _flowChips; track chip) {
+            <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">{{ chip }}</span>
+          }
+        }
+        <mat-icon class="icon-sm text-muted-foreground transition-transform duration-200"
+                  [class.rotate-180]="showFlow">expand_more</mat-icon>
+      </div>
+    </button>
+
+    @if (showFlow) {
+      <div class="border-t border-border">
+        @if (docFlowRows.length > 0) {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-border bg-muted/40">
+                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Type</th>
+                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">No</th>
+                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Status</th>
+                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Date</th>
+                <th class="text-right text-xs font-medium text-muted-foreground h-8 px-4 py-0">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of docFlowRows; track r.number) {
+                <tr class="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+                  <td class="px-4 py-2 text-muted-foreground text-xs">{{ r.typeLabel }}</td>
+                  <td class="px-4 py-2"><a [routerLink]="r.routerLink" class="doc-link text-xs">{{ r.number }}</a></td>
+                  <td class="px-4 py-2"><app-status-badge [status]="r.status" /></td>
+                  <td class="px-4 py-2 text-xs text-muted-foreground tabular-nums">{{ r.date | formatDate }}</td>
+                  <td class="px-4 py-2 text-xs text-right tabular-nums font-medium">{{ r.amount | formatMoney }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="px-4 py-3 text-sm text-muted-foreground">No linked documents.</p>
+        }
+      </div>
     }
-  </mat-expansion-panel>
+  </div>
 
-  <!-- ── SUPPORTING INFO ──────────────────────────────────────────────── -->
-  <mat-expansion-panel class="section-panel">
-    <mat-expansion-panel-header>
-      <mat-panel-title class="panel-title">Supporting Info</mat-panel-title>
-      <mat-panel-description class="flow-chips">
-        <span class="flow-chip">Activity&nbsp;0</span>
-        <span class="flow-chip">Attachments&nbsp;0</span>
-        <span class="flow-chip">Accounting: Posted</span>
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <p class="muted support-placeholder">Activity, attachments and accounting entries — coming soon.</p>
-  </mat-expansion-panel>
+  <!-- ── Accordion: Supporting Info ───────────────────────────────────────── -->
+  <div class="card">
+    <button type="button"
+            class="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-muted/50 transition-colors"
+            (click)="showSupporting = !showSupporting">
+      <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Supporting Info</span>
+      <div class="flex items-center gap-2">
+        @if (!showSupporting) {
+          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Activity 0</span>
+          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Attachments 0</span>
+          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Accounting: Posted</span>
+        }
+        <mat-icon class="icon-sm text-muted-foreground transition-transform duration-200"
+                  [class.rotate-180]="showSupporting">expand_more</mat-icon>
+      </div>
+    </button>
+
+    @if (showSupporting) {
+      <div class="border-t border-border px-4 py-3">
+        <p class="text-sm text-muted-foreground">Activity, attachments and accounting entries — coming soon.</p>
+      </div>
+    }
+  </div>
 
 </div>
 } @else {
-  <div class="pg"><p class="muted">Invoice not found.</p></div>
+  <div class="p-6"><p class="text-sm text-muted-foreground">Invoice not found.</p></div>
 }

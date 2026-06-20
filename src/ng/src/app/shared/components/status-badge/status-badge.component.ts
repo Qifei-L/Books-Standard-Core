@@ -1,62 +1,54 @@
 import { Component, Input } from '@angular/core'
 
 const LABEL_MAP: Record<string, string> = {
-  Draft: 'Draft',
-  Awaiting: 'Awaiting',
-  Paid: 'Paid',
-  Overdue: 'Overdue',
-  Sent: 'Sent',
-  Accepted: 'Accepted',
-  Declined: 'Declined',
-  Expired: 'Expired',
+  Draft:              'Draft',
+  Awaiting:           'Awaiting',
+  Paid:               'Paid',
+  Overdue:            'Overdue',
+  Sent:               'Sent',
+  Accepted:           'Accepted',
+  Declined:           'Declined',
+  Expired:            'Expired',
   ConvertedToInvoice: 'Converted',
-  Submitted: 'Submitted',
-  Cancelled: 'Cancelled',
-  Posted: 'Posted',
-  not_invoiced: 'Not Invoiced',
+  Submitted:          'Submitted',
+  Cancelled:          'Cancelled',
+  Posted:             'Posted',
+  not_invoiced:       'Not Invoiced',
   partially_invoiced: 'Partial',
-  invoiced: 'Invoiced',
+  invoiced:           'Invoiced',
 }
 
+// Tailwind classes for each colour variant
 const CLASS_MAP: Record<string, string> = {
-  Draft: 'gray',
-  Awaiting: 'blue',
-  Paid: 'green',
-  Overdue: 'red',
-  Sent: 'blue',
-  Accepted: 'green',
-  Declined: 'red',
-  Expired: 'orange',
-  ConvertedToInvoice: 'purple',
-  Submitted: 'blue',
-  Cancelled: 'red',
-  Posted: 'green',
-  not_invoiced: 'orange',
-  partially_invoiced: 'blue',
-  invoiced: 'green',
+  Draft:              'border-slate-200  bg-slate-100  text-slate-600',
+  Awaiting:           'border-blue-200   bg-blue-50    text-blue-700',
+  Paid:               'border-green-200  bg-green-50   text-green-700',
+  Overdue:            'border-red-200    bg-red-50     text-red-700',
+  Sent:               'border-blue-200   bg-blue-50    text-blue-700',
+  Accepted:           'border-green-200  bg-green-50   text-green-700',
+  Declined:           'border-red-200    bg-red-50     text-red-700',
+  Expired:            'border-orange-200 bg-orange-50  text-orange-700',
+  ConvertedToInvoice: 'border-purple-200 bg-purple-50  text-purple-700',
+  Submitted:          'border-blue-200   bg-blue-50    text-blue-700',
+  Cancelled:          'border-red-200    bg-red-50     text-red-700',
+  Posted:             'border-green-200  bg-green-50   text-green-700',
+  not_invoiced:       'border-orange-200 bg-orange-50  text-orange-700',
+  partially_invoiced: 'border-blue-200   bg-blue-50    text-blue-700',
+  invoiced:           'border-green-200  bg-green-50   text-green-700',
 }
+
+const BASE = 'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap'
 
 @Component({
   selector: 'app-status-badge',
   standalone: true,
-  template: `<span [class]="'badge badge-' + color">{{ label }}</span>`,
-  styles: [`
-    .badge {
-      display: inline-block; padding: 2px 8px; border-radius: 10px;
-      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
-      white-space: nowrap;
-    }
-    .badge-gray   { background: #f1f3f4; color: #5f6368; }
-    .badge-blue   { background: #e8f0fe; color: #1967d2; }
-    .badge-green  { background: #e6f4ea; color: #137333; }
-    .badge-red    { background: #fce8e6; color: #c5221f; }
-    .badge-orange { background: #fef7e0; color: #b06000; }
-    .badge-purple { background: #f3e8fd; color: #7b1fa2; }
-  `],
+  template: `<span [class]="classes">{{ label }}</span>`,
 })
 export class StatusBadgeComponent {
   @Input() status = ''
 
-  get color(): string { return CLASS_MAP[this.status] ?? 'gray' }
   get label(): string { return LABEL_MAP[this.status] ?? this.status }
+  get classes(): string {
+    return `${BASE} ${CLASS_MAP[this.status] ?? 'border-slate-200 bg-slate-100 text-slate-600'}`
+  }
 }

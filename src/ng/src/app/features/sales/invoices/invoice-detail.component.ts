@@ -26,6 +26,15 @@ import {
 } from '../../../core/lib/stock-documents'
 import type { Invoice, Contact, Quotation, SalesOrder } from '../../../core/types'
 
+interface DocFlowRow {
+  typeLabel: string
+  number: string
+  status: string
+  date: string
+  amount: number
+  routerLink: string[]
+}
+
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
@@ -54,8 +63,10 @@ export class InvoiceDetailComponent implements OnInit {
   deliveryNotes:  ReturnType<typeof getDeliveryNotesForInvoice> = []
   paymentCount = 0
   docGroups: DocumentGroup[] = []
+  docFlowRows: DocFlowRow[] = []
 
-  lineCols = ['description', 'quantity', 'unitPrice', 'amount']
+  lineCols     = ['description', 'quantity', 'unitPrice', 'amount']
+  flowCols     = ['typeLabel', 'number', 'status', 'date', 'amount']
 
   ngOnInit(): void {
     const id  = this.route.snapshot.paramMap.get('id')!
@@ -76,6 +87,53 @@ export class InvoiceDetailComponent implements OnInit {
 
     const shipStatus    = getInvoiceShipmentStatus(inv)
     const needsShipment = shipStatus === 'not_shipped' || shipStatus === 'partially_shipped'
+
+    // Flat document flow table — sorted chronologically
+    const flowRows: DocFlowRow[] = []
+
+    if (this.quotation) {
+      flowRows.push({
+        typeLabel: 'Quote',
+        number: this.quotation.number,
+        status: this.quotation.status,
+        date: this.quotation.date,
+        amount: this.quotation.total,
+        routerLink: ['/sales/quotes', this.quotation.id],
+      })
+    }
+    if (this.salesOrder) {
+      flowRows.push({
+        typeLabel: 'Sales Order',
+        number: this.salesOrder.number,
+        status: this.salesOrder.status,
+        date: this.salesOrder.date,
+        amount: this.salesOrder.total,
+        routerLink: ['/sales/orders', this.salesOrder.id],
+      })
+    }
+    for (const dn of this.deliveryNotes) {
+      const total = dn.lines.reduce((s, l) => s + l.quantity * l.unitCost, 0)
+      flowRows.push({
+        typeLabel: 'Delivery Note',
+        number: dn.number,
+        status: dn.status,
+        date: dn.date,
+        amount: total,
+        routerLink: ['/sales/delivery-notes', dn.id],
+      })
+    }
+    for (const a of allocations) {
+      flowRows.push({
+        typeLabel: 'Payment',
+        number: a.paymentNumber,
+        status: 'Paid',
+        date: a.paymentDate,
+        amount: a.amount,
+        routerLink: ['/sales/payments', a.paymentId],
+      })
+    }
+    flowRows.sort((a, b) => a.date.localeCompare(b.date))
+    this.docFlowRows = flowRows
 
     this.docGroups = [
       {

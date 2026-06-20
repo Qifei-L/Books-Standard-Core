@@ -158,7 +158,38 @@
       </mat-panel-description>
     </mat-expansion-panel-header>
 
-    <app-document-links-section [groups]="docGroups" />
+    @if (docFlowRows.length > 0) {
+      <table mat-table [dataSource]="docFlowRows" class="flow-table">
+        <ng-container matColumnDef="typeLabel">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let r">{{ r.typeLabel }}</td>
+        </ng-container>
+        <ng-container matColumnDef="number">
+          <th mat-header-cell *matHeaderCellDef>No</th>
+          <td mat-cell *matCellDef="let r">
+            <a [routerLink]="r.routerLink" class="doc-link">{{ r.number }}</a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let r">
+            <app-status-badge [status]="r.status" />
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let r" class="muted">{{ r.date | formatDate }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
+          <td mat-cell *matCellDef="let r" class="num">{{ r.amount | formatMoney }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="flowCols"></tr>
+        <tr mat-row *matRowDef="let _; columns: flowCols"></tr>
+      </table>
+    } @else {
+      <p class="muted" style="padding: 8px 16px; font-size: 12px;">No linked documents.</p>
+    }
   </mat-expansion-panel>
 
   <!-- ── SUPPORTING INFO ──────────────────────────────────────────────── -->

@@ -146,15 +146,10 @@
     <mat-expansion-panel-header>
       <mat-panel-title class="panel-title">Document Flow</mat-panel-title>
       <mat-panel-description class="flow-chips">
-        @if (quotation)   { <span class="flow-chip">Quote&nbsp;1</span> }
-        @if (salesOrder)  { <span class="flow-chip">Sales Order&nbsp;1</span> }
-        @if (deliveryNotes.length > 0) {
-          <span class="flow-chip">Delivery Note&nbsp;{{ deliveryNotes.length }}</span>
-        }
-        <span class="flow-chip current">Invoice&nbsp;1</span>
-        @if (paymentCount > 0) {
-          <span class="flow-chip">Payment&nbsp;{{ paymentCount }}</span>
-        }
+        @if (quotation)               { <span class="flow-chip">Quote&nbsp;1</span> }
+        @if (salesOrder)              { <span class="flow-chip">Sales Order&nbsp;1</span> }
+        @if (deliveryNotes.length > 0){ <span class="flow-chip">Delivery Note&nbsp;{{ deliveryNotes.length }}</span> }
+        @if (paymentCount > 0)        { <span class="flow-chip">Payment&nbsp;{{ paymentCount }}</span> }
       </mat-panel-description>
     </mat-expansion-panel-header>
 

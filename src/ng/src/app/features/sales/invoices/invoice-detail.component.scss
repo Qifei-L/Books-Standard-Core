@@ -1,79 +1,163 @@
-.doc-head {
+// ── Top bar ────────────────────────────────────────────────────────────────
+.top-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
 }
-.doc-number  { font-size: 18px; font-weight: 700; color: #172b4d; }
-.doc-contact { font-size: 13px; margin-top: 2px; }
-.doc-head-right {
+.top-bar-left {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
 }
-.doc-actions { display: flex; gap: 6px; }
-
-// Meta strip — document info block, not dashboard cards
-.meta-strip {
+.inv-num {
+  font-size: 17px;
+  font-weight: 700;
+  color: #172b4d;
+}
+.top-bar-actions {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
+}
+.warn-item { color: #bf2600; }
+
+// ── Header: two-column info block ──────────────────────────────────────────
+.doc-header {
+  display: flex;
   gap: 0;
   background: #fff;
   border: 1px solid #dde1e7;
   border-radius: 3px;
-  padding: 12px 16px;
   margin-bottom: 12px;
+  overflow: hidden;
 }
-.meta-dates, .meta-amounts {
-  display: flex;
-  gap: 24px;
+.header-left {
+  flex: 1;
+  padding: 14px 20px;
+  border-right: 1px solid #dde1e7;
 }
-.meta-sep {
-  width: 1px;
-  background: #dde1e7;
-  margin: 0 20px;
-  align-self: stretch;
+.header-right {
+  flex: 1;
+  padding: 14px 20px;
 }
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.meta-label {
+.bill-to-label {
   font-size: 10px;
-  font-weight: 600;
-  color: #6b778c;
+  font-weight: 700;
+  color: #97a0af;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
 }
-.meta-val {
-  font-size: 13px;
+.customer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #172b4d;
+  margin-bottom: 8px;
+}
+.info-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.info-table tr { height: 26px; }
+.info-label {
+  font-size: 11px;
+  color: #97a0af;
   font-weight: 500;
+  width: 110px;
+  padding-right: 12px;
+  white-space: nowrap;
+}
+.info-val {
+  font-size: 12px;
   color: #172b4d;
 }
-.amount-due .meta-val { font-size: 15px; font-weight: 700; }
-.due-sub { font-size: 11px; }
+.outstanding { font-weight: 600; color: #172b4d; }
 .overdue { color: #bf2600 !important; }
 
-// Section card
-.section-card { margin-bottom: 12px; overflow: hidden; }
-.section-label {
-  padding: 8px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #6b778c;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #dde1e7;
+// ── Invoice body card ──────────────────────────────────────────────────────
+.body-card {
+  margin-bottom: 12px;
+  overflow: hidden;
 }
-.w-full  { width: 100%; }
+.w-full { width: 100%; }
 .item-code { font-size: 11px; color: #97a0af; margin-top: 1px; }
-.line-totals {
+
+// Totals block — right-aligned rows
+.totals-block {
   display: flex;
   justify-content: flex-end;
-  gap: 20px;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 0 12px 10px;
   border-top: 1px solid #f4f5f7;
 }
+.totals-inner {
+  min-width: 260px;
+  padding-top: 8px;
+}
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.tl-label { color: #6b778c; font-size: 12px; }
+.tl-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 120px;
+  text-align: right;
+}
+.total-sum {
+  border-top: 1px solid #dde1e7;
+  border-bottom: 1px solid #dde1e7;
+  margin: 3px 0;
+  padding: 5px 0;
+  .tl-label { color: #172b4d; font-weight: 600; }
+  .tl-val   { font-weight: 700; }
+}
+.amount-due-line {
+  margin-top: 2px;
+  .tl-label { color: #172b4d; font-weight: 600; }
+  .tl-val   { font-size: 15px; font-weight: 700; }
+}
+
+// ── Expansion panels ───────────────────────────────────────────────────────
+.section-panel {
+  margin-bottom: 8px;
+  border: 1px solid #dde1e7 !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+
+  &.mat-expanded { margin-bottom: 8px !important; }
+}
+.panel-title {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #172b4d !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.flow-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.flow-chip {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b778c;
+  background: #f4f5f7;
+  border-radius: 2px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+.flow-chip.current {
+  background: #ebf0fa;
+  color: #0052cc;
+  font-weight: 600;
+}
+
+.support-placeholder { padding: 4px 0 8px; font-size: 12px; }

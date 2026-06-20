@@ -1,101 +1,180 @@
 @if (invoice) {
-  <div class="pg">
+<div class="pg">
 
-    <!-- Document header -->
-    <div class="doc-head">
-      <div>
-        <div class="doc-number">{{ invoice.number }}</div>
-        <div class="doc-contact muted">{{ invoice.contactName }}</div>
-      </div>
-      <div class="doc-head-right">
-        <app-status-badge [status]="invoice.status" />
-        <div class="doc-actions">
-          <button mat-stroked-button>Edit</button>
-          <button mat-stroked-button>Send</button>
-          <button mat-stroked-button>Void</button>
-        </div>
-      </div>
+  <!-- ── TOP BAR ─────────────────────────────────────────────────────────── -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span class="inv-num">{{ invoice.number }}</span>
+      <app-status-badge [status]="invoice.status" />
+    </div>
+    <div class="top-bar-actions">
+      <button mat-stroked-button>
+        <mat-icon>edit</mat-icon> Edit
+      </button>
+      <button mat-flat-button color="primary" [routerLink]="['/sales/payments/new']">
+        <mat-icon>payments</mat-icon> Payment
+      </button>
+      <button mat-stroked-button [routerLink]="['/sales/delivery-notes/new']">
+        <mat-icon>local_shipping</mat-icon> Delivery Note
+      </button>
+      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #moreMenu>
+        <button mat-menu-item><mat-icon>content_copy</mat-icon> Duplicate</button>
+        <button mat-menu-item><mat-icon>print</mat-icon> Print</button>
+        <mat-divider />
+        <button mat-menu-item class="warn-item"><mat-icon>block</mat-icon> Void</button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <!-- ── HEADER: Invoice Info + Bill To ──────────────────────────────────── -->
+  <div class="doc-header">
+    <div class="header-left">
+      <table class="info-table">
+        <tr>
+          <td class="info-label">Reference</td>
+          <td class="info-val">{{ invoice.salesOrderId ?? '—' }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">Issue Date</td>
+          <td class="info-val">{{ invoice.date | formatDate }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">Due Date</td>
+          <td class="info-val" [class.overdue]="dueMeta.isOverdue && amounts.amountDue > 0">
+            {{ invoice.dueDate | formatDate }}
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">Currency</td>
+          <td class="info-val">CNY</td>
+        </tr>
+        <tr>
+          <td class="info-label">Terms</td>
+          <td class="info-val">30 Days</td>
+        </tr>
+      </table>
     </div>
 
-    <!-- Meta strip -->
-    <div class="meta-strip">
-      <div class="meta-dates">
-        <div class="meta-item">
-          <span class="meta-label">Issue Date</span>
-          <span class="meta-val">{{ invoice.date | formatDate }}</span>
+    <div class="header-right">
+      <div class="bill-to-label">BILL TO</div>
+      <div class="customer-name">{{ invoice.contactName }}</div>
+      <table class="info-table">
+        <tr>
+          <td class="info-label">VAT No</td>
+          <td class="info-val">—</td>
+        </tr>
+        <tr>
+          <td class="info-label">Address</td>
+          <td class="info-val">—</td>
+        </tr>
+        <tr>
+          <td class="info-label">Email</td>
+          <td class="info-val">{{ contact?.email ?? '—' }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">Credit Terms</td>
+          <td class="info-val">—</td>
+        </tr>
+        <tr>
+          <td class="info-label">Outstanding</td>
+          <td class="info-val outstanding">{{ contact?.balance ?? 0 | formatMoney }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── LINE ITEMS ────────────────────────────────────────────────────── -->
+  <mat-card appearance="outlined" class="body-card">
+    <table mat-table [dataSource]="invoice.lines" class="w-full">
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let l">
+          <div>{{ l.description }}</div>
+          @if (l.itemCode) { <div class="item-code">{{ l.itemCode }}</div> }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef class="num">Qty</th>
+        <td mat-cell *matCellDef="let l" class="num muted">{{ l.quantity }}</td>
+      </ng-container>
+      <ng-container matColumnDef="unitPrice">
+        <th mat-header-cell *matHeaderCellDef class="num">Unit Price</th>
+        <td mat-cell *matCellDef="let l" class="num muted">{{ l.unitPrice | formatMoney }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
+        <td mat-cell *matCellDef="let l" class="num">{{ l.amount | formatMoney }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="lineCols"></tr>
+      <tr mat-row *matRowDef="let _; columns: lineCols"></tr>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-block">
+      <div class="totals-inner">
+        <div class="total-line">
+          <span class="tl-label muted">Subtotal</span>
+          <span class="tl-val num">{{ invoice.subtotal | formatMoney }}</span>
         </div>
-        <div class="meta-item">
-          <span class="meta-label">Due Date</span>
-          <span class="meta-val" [class.overdue]="amounts.amountDue > 0 && dueMeta.isOverdue">
-            {{ invoice.dueDate | formatDate }}
-          </span>
+        <div class="total-line">
+          <span class="tl-label muted">VAT</span>
+          <span class="tl-val num">{{ invoice.tax | formatMoney }}</span>
         </div>
-      </div>
-      <div class="meta-sep"></div>
-      <div class="meta-amounts">
-        <div class="meta-item">
-          <span class="meta-label">Subtotal</span>
-          <span class="meta-val num">{{ invoice.subtotal | formatMoney }}</span>
+        <div class="total-line total-sum">
+          <span class="tl-label">Total</span>
+          <span class="tl-val num">{{ invoice.total | formatMoney }}</span>
         </div>
-        <div class="meta-item">
-          <span class="meta-label">Tax</span>
-          <span class="meta-val num">{{ invoice.tax | formatMoney }}</span>
+        <div class="total-line">
+          <span class="tl-label muted">Paid</span>
+          <span class="tl-val num muted">{{ amounts.amountPaid | formatMoney }}</span>
         </div>
-        <div class="meta-item">
-          <span class="meta-label">Total</span>
-          <span class="meta-val num">{{ invoice.total | formatMoney }}</span>
-        </div>
-        <div class="meta-item amount-due">
-          <span class="meta-label">Amount Due</span>
-          <span class="meta-val num" [class.overdue]="dueMeta.isOverdue">
+        <div class="total-line amount-due-line">
+          <span class="tl-label">Amount Due</span>
+          <span class="tl-val num" [class.overdue]="dueMeta.isOverdue">
             {{ amounts.amountDue | formatMoney }}
           </span>
-          @if (dueMeta.dueLabel) {
-            <span class="due-sub muted" [class.overdue]="dueMeta.isOverdue">
-              {{ dueMeta.dueLabel }}
-            </span>
-          }
         </div>
       </div>
     </div>
+  </mat-card>
 
-    <!-- Line items -->
-    <mat-card appearance="outlined" class="section-card">
-      <div class="section-label">Line Items</div>
-      <table mat-table [dataSource]="invoice.lines" class="w-full">
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef>Item / Description</th>
-          <td mat-cell *matCellDef="let l">
-            <div>{{ l.description }}</div>
-            @if (l.itemCode) { <div class="item-code">{{ l.itemCode }}</div> }
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="quantity">
-          <th mat-header-cell *matHeaderCellDef class="num">Qty</th>
-          <td mat-cell *matCellDef="let l" class="num muted">{{ l.quantity }}</td>
-        </ng-container>
-        <ng-container matColumnDef="unitPrice">
-          <th mat-header-cell *matHeaderCellDef class="num">Unit Price</th>
-          <td mat-cell *matCellDef="let l" class="num muted">{{ l.unitPrice | formatMoney }}</td>
-        </ng-container>
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
-          <td mat-cell *matCellDef="let l" class="num">{{ l.amount | formatMoney }}</td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="lineCols"></tr>
-        <tr mat-row *matRowDef="let _; columns: lineCols"></tr>
-      </table>
-      <div class="line-totals">
-        <span class="muted">Subtotal&nbsp;<strong>{{ invoice.subtotal | formatMoney }}</strong></span>
-        <span class="muted">Tax&nbsp;<strong>{{ invoice.tax | formatMoney }}</strong></span>
-        <span>Total&nbsp;<strong>{{ invoice.total | formatMoney }}</strong></span>
-      </div>
-    </mat-card>
+  <!-- ── DOCUMENT FLOW ─────────────────────────────────────────────────── -->
+  <mat-expansion-panel class="section-panel" expanded>
+    <mat-expansion-panel-header>
+      <mat-panel-title class="panel-title">Document Flow</mat-panel-title>
+      <mat-panel-description class="flow-chips">
+        @if (quotation)   { <span class="flow-chip">Quote&nbsp;1</span> }
+        @if (salesOrder)  { <span class="flow-chip">Sales Order&nbsp;1</span> }
+        @if (deliveryNotes.length > 0) {
+          <span class="flow-chip">Delivery Note&nbsp;{{ deliveryNotes.length }}</span>
+        }
+        <span class="flow-chip current">Invoice&nbsp;1</span>
+        @if (paymentCount > 0) {
+          <span class="flow-chip">Payment&nbsp;{{ paymentCount }}</span>
+        }
+      </mat-panel-description>
+    </mat-expansion-panel-header>
 
-    <!-- Related Documents (grouped) -->
     <app-document-links-section [groups]="docGroups" />
+  </mat-expansion-panel>
 
-  </div>
+  <!-- ── SUPPORTING INFO ──────────────────────────────────────────────── -->
+  <mat-expansion-panel class="section-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title class="panel-title">Supporting Info</mat-panel-title>
+      <mat-panel-description class="flow-chips">
+        <span class="flow-chip">Activity&nbsp;0</span>
+        <span class="flow-chip">Attachments&nbsp;0</span>
+        <span class="flow-chip">Accounting: Posted</span>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <p class="muted support-placeholder">Activity, attachments and accounting entries — coming soon.</p>
+  </mat-expansion-panel>
+
+</div>
 } @else {
   <div class="pg"><p class="muted">Invoice not found.</p></div>
 }

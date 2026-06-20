@@ -4,6 +4,9 @@ import { MatCardModule } from '@angular/material/card'
 import { MatTableModule } from '@angular/material/table'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatMenuModule } from '@angular/material/menu'
+import { MatDividerModule } from '@angular/material/divider'
 import { DataService } from '../../../core/data/data.service'
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component'
 import {
@@ -21,7 +24,7 @@ import {
   getDeliveryNotesForInvoice,
   getInvoiceShipmentStatus,
 } from '../../../core/lib/stock-documents'
-import type { Invoice } from '../../../core/types'
+import type { Invoice, Contact, Quotation, SalesOrder } from '../../../core/types'
 
 @Component({
   selector: 'app-invoice-detail',
@@ -29,6 +32,7 @@ import type { Invoice } from '../../../core/types'
   imports: [
     RouterLink,
     MatCardModule, MatTableModule, MatButtonModule, MatIconModule,
+    MatExpansionModule, MatMenuModule, MatDividerModule,
     StatusBadgeComponent, DocumentLinksSectionComponent,
     FormatDatePipe, FormatMoneyPipe,
   ],
@@ -39,10 +43,18 @@ export class InvoiceDetailComponent implements OnInit {
   private route = inject(ActivatedRoute)
   private data  = inject(DataService)
 
-  invoice: Invoice | undefined
+  invoice:   Invoice   | undefined
+  contact:   Contact   | undefined
+  quotation: Quotation | undefined
+  salesOrder: SalesOrder | undefined
+
   amounts  = { amountPaid: 0, amountDue: 0 }
   dueMeta  = { dueDays: 0, isOverdue: false, dueLabel: null as string | null }
+
+  deliveryNotes:  ReturnType<typeof getDeliveryNotesForInvoice> = []
+  paymentCount = 0
   docGroups: DocumentGroup[] = []
+
   lineCols = ['description', 'quantity', 'unitPrice', 'amount']
 
   ngOnInit(): void {
@@ -51,13 +63,17 @@ export class InvoiceDetailComponent implements OnInit {
     if (!inv) return
     this.invoice = inv
 
+    this.contact    = this.data.contacts.find((c) => c.id === inv.contactId)
+    this.quotation  = inv.quotationId  ? this.data.getQuotation(inv.quotationId)   : undefined
+    this.salesOrder = inv.salesOrderId ? this.data.getSalesOrder(inv.salesOrderId) : undefined
+
     this.amounts = getInvoiceAmounts(inv)
     this.dueMeta = getInvoiceDueMeta(inv, this.amounts.amountDue)
 
-    const quotation    = inv.quotationId   ? this.data.getQuotation(inv.quotationId)   : null
-    const salesOrder   = inv.salesOrderId  ? this.data.getSalesOrder(inv.salesOrderId) : null
-    const deliveryNotes = getDeliveryNotesForInvoice(inv.id)
-    const allocations   = getInvoiceAllocations(inv.id)
+    this.deliveryNotes = getDeliveryNotesForInvoice(inv.id)
+    const allocations  = getInvoiceAllocations(inv.id)
+    this.paymentCount  = allocations.length
+
     const shipStatus    = getInvoiceShipmentStatus(inv)
     const needsShipment = shipStatus === 'not_shipped' || shipStatus === 'partially_shipped'
 
@@ -66,9 +82,10 @@ export class InvoiceDetailComponent implements OnInit {
         key: 'quotation',
         title: 'Quotation',
         showStatus: true,
-        rows: quotation
-          ? [{ id: quotation.id, number: quotation.number, date: quotation.date,
-               routerLink: ['/sales/quotes', quotation.id], status: quotation.status }]
+        rows: this.quotation
+          ? [{ id: this.quotation.id, number: this.quotation.number,
+               date: this.quotation.date, routerLink: ['/sales/quotes', this.quotation.id],
+               status: this.quotation.status }]
           : [],
         emptyMessage: 'No linked quotation',
       },
@@ -76,9 +93,10 @@ export class InvoiceDetailComponent implements OnInit {
         key: 'order',
         title: 'Sales Order',
         showStatus: true,
-        rows: salesOrder
-          ? [{ id: salesOrder.id, number: salesOrder.number, date: salesOrder.date,
-               routerLink: ['/sales/orders', salesOrder.id], status: salesOrder.status }]
+        rows: this.salesOrder
+          ? [{ id: this.salesOrder.id, number: this.salesOrder.number,
+               date: this.salesOrder.date, routerLink: ['/sales/orders', this.salesOrder.id],
+               status: this.salesOrder.status }]
           : [],
         emptyMessage: 'No linked sales order',
       },
@@ -86,7 +104,7 @@ export class InvoiceDetailComponent implements OnInit {
         key: 'delivery',
         title: 'Delivery Notes',
         showStatus: true,
-        rows: deliveryNotes.map((dn) => ({
+        rows: this.deliveryNotes.map((dn) => ({
           id: dn.id, number: dn.number, date: dn.date,
           routerLink: ['/sales/delivery-notes', dn.id], status: dn.status,
         })),

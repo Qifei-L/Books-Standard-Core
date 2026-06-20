@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { MatCardModule } from '@angular/material/card'
 import { MatTableModule } from '@angular/material/table'
@@ -29,8 +29,8 @@ export class InvoiceListComponent {
 
   cols = ['number', 'contact', 'date', 'dueDate', 'status', 'total', 'amountDue']
 
-  rows: InvoiceRow[] = this.data.invoices.map((inv) => ({
+  rows = computed<InvoiceRow[]>(() => this.data.invoices.map((inv) => ({
     ...inv,
     amountDue: getInvoiceAmounts(inv).amountDue,
-  }))
+  })))
 }

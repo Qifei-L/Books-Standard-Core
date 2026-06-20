@@ -1,223 +1,246 @@
-@if (invoice) {
-<div class="p-6 space-y-3">
+@if (invoice(); as inv) {
+<div class="inv-desk min-h-full font-sans text-ink px-6 py-11 flex justify-center"
+     style="-webkit-font-smoothing:antialiased">
+  <div class="w-full max-w-[760px]">
 
-  <!-- ╔══ Card: main document ═══════════════════════════════════════════════╗ -->
-  <div class="card">
-
-    <!-- Top bar: document number + status + actions -->
-    <div class="flex items-center justify-between px-6 py-4 gap-4">
-      <div class="flex items-center gap-3 min-w-0">
-        <h1 class="text-lg font-bold tracking-tight text-foreground truncate">{{ invoice.number }}</h1>
-        <app-status-badge [status]="invoice.status" />
-      </div>
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button class="btn btn-outline" type="button">Edit</button>
-        <button class="btn btn-default" type="button" [routerLink]="['/sales/payments/new']">
-          <mat-icon class="icon-sm">payments</mat-icon>Payment
-        </button>
-        <button class="btn btn-outline" type="button" [routerLink]="['/sales/delivery-notes/new']">
-          <mat-icon class="icon-sm">local_shipping</mat-icon>Delivery Note
-        </button>
-        <button class="btn btn-ghost btn-icon" type="button" [matMenuTriggerFor]="moreMenu">
-          <mat-icon class="icon-sm">more_vert</mat-icon>
-        </button>
-        <mat-menu #moreMenu>
-          <button mat-menu-item><mat-icon>content_copy</mat-icon>Duplicate</button>
-          <button mat-menu-item><mat-icon>print</mat-icon>Print</button>
-          <button mat-menu-item class="text-destructive"><mat-icon>block</mat-icon>Void</button>
-        </mat-menu>
-      </div>
+    <!-- ── Toolbar (chrome above the sheet, not on paper) ──────────────────── -->
+    <div class="flex items-center justify-end gap-2 mb-[18px]">
+      <button type="button" class="tbtn ghost" [routerLink]="['/sales/invoices', inv.id, 'edit']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        Edit
+      </button>
+      <button type="button" class="tbtn primary" [routerLink]="['/sales/payments/new']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg>
+        Record payment
+      </button>
+      <button type="button" class="tbtn ghost" [routerLink]="['/sales/delivery-notes/new']">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+        Delivery note
+      </button>
+      <button type="button" class="tbtn kebab" [matMenuTriggerFor]="moreMenu" aria-label="More">⋮</button>
+      <mat-menu #moreMenu>
+        <button mat-menu-item><mat-icon>content_copy</mat-icon>Duplicate</button>
+        <button mat-menu-item><mat-icon>print</mat-icon>Print</button>
+        <button mat-menu-item style="color:#b3392f"><mat-icon>block</mat-icon>Void</button>
+      </mat-menu>
     </div>
 
-    <div class="separator"></div>
+    <!-- ╔══ THE PAPER SHEET ════════════════════════════════════════════════════╗ -->
+    <article class="inv-sheet relative bg-paper rounded-sm overflow-hidden shadow-sheet"
+             style="border:1px solid rgba(60,55,40,.07); padding:60px 64px 52px">
+      <!-- Top-light shine -->
+      <div class="absolute inset-x-0 top-0 h-[120px] pointer-events-none"
+           style="background:linear-gradient(180deg,rgba(255,255,255,.6),transparent)"></div>
+      <!-- Grain texture -->
+      <div class="inv-grain absolute inset-0 pointer-events-none" aria-hidden="true"></div>
 
-    <!-- Header: invoice meta (left) | Bill To (right) -->
-    <div class="grid grid-cols-2 px-6 py-5 border-b border-border">
+      <!-- Rubber stamp (only if status maps to one) -->
+      @if (stamp(); as st) {
+        <div class="inv-stamp" [style.color]="st.ink">{{ st.label }}</div>
+      }
 
-      <!-- Left: invoice fields -->
-      <div class="space-y-2 pr-8">
-        <div class="flex items-baseline gap-2">
-          <span class="text-xs text-muted-foreground w-24 shrink-0">Reference</span>
-          <span class="text-sm text-foreground">{{ invoice.salesOrderId ?? '—' }}</span>
-        </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-xs text-muted-foreground w-24 shrink-0">Issue Date</span>
-          <span class="text-sm text-foreground">{{ invoice.date | formatDate }}</span>
-        </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-xs text-muted-foreground w-24 shrink-0">Due Date</span>
-          <span class="text-sm" [class.text-foreground]="!dueMeta.isOverdue || amounts.amountDue === 0"
-                                [class.text-destructive]="dueMeta.isOverdue && amounts.amountDue > 0">
-            {{ invoice.dueDate | formatDate }}
-          </span>
-        </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-xs text-muted-foreground w-24 shrink-0">Currency</span>
-          <span class="text-sm text-foreground">CNY</span>
-        </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-xs text-muted-foreground w-24 shrink-0">Terms</span>
-          <span class="text-sm text-foreground">30 Days</span>
-        </div>
-      </div>
-
-      <!-- Right: Bill To address block -->
-      <div class="pl-8 border-l border-border">
-        <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Bill To</p>
-        <p class="text-sm font-semibold text-foreground mb-1">{{ invoice.contactName }}</p>
-        <p class="text-xs text-muted-foreground leading-relaxed">VAT —</p>
-        <p class="text-xs text-muted-foreground leading-relaxed">—</p>
-        <p class="text-xs text-muted-foreground leading-relaxed">{{ contact?.email ?? '—' }}</p>
-        <p class="text-xs text-muted-foreground mt-2">
-          Outstanding <span class="text-foreground font-semibold tabular-nums">{{ (contact?.balance ?? 0) | formatMoney }}</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Line items -->
-    <div>
-      <p class="px-6 pt-4 pb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">Line Items</p>
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-y border-border bg-muted/40">
-            <th class="text-left text-xs font-medium text-muted-foreground h-9 px-6 py-0">Description</th>
-            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-4 py-0 w-16">Qty</th>
-            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-4 py-0 w-32">Unit Price</th>
-            <th class="text-right text-xs font-medium text-muted-foreground h-9 px-6 py-0 w-32">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (l of invoice.lines; track l.id) {
-            <tr class="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-              <td class="px-6 py-2.5 align-top">
-                <span class="text-foreground">{{ l.description }}</span>
-                @if (l.itemCode) {
-                  <span class="block text-xs text-muted-foreground mt-0.5">{{ l.itemCode }}</span>
-                }
-              </td>
-              <td class="px-4 py-2.5 text-right text-muted-foreground tabular-nums">{{ l.quantity }}</td>
-              <td class="px-4 py-2.5 text-right text-muted-foreground tabular-nums">{{ l.unitPrice | formatMoney }}</td>
-              <td class="px-6 py-2.5 text-right tabular-nums font-medium">{{ l.amount | formatMoney }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
-      <!-- Totals -->
-      <div class="flex justify-end px-6 py-4">
-        <div class="w-52 space-y-1">
-          <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Subtotal</span>
-            <span class="tabular-nums">{{ invoice.subtotal | formatMoney }}</span>
+      <!-- ── Letterhead ──────────────────────────────────────────────────── -->
+      <header class="relative z-10 flex justify-between items-start">
+        <div>
+          <div class="font-serif text-[21px] font-semibold leading-tight" style="letter-spacing:.01em">
+            示例科技有限公司
           </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">VAT</span>
-            <span class="tabular-nums">{{ invoice.tax | formatMoney }}</span>
-          </div>
-          <div class="separator my-1.5"></div>
-          <div class="flex justify-between text-sm font-semibold">
-            <span>Total</span>
-            <span class="tabular-nums">{{ invoice.total | formatMoney }}</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Paid</span>
-            <span class="tabular-nums text-muted-foreground">{{ amounts.amountPaid | formatMoney }}</span>
-          </div>
-          <div class="separator my-1.5"></div>
-          <div class="flex justify-between">
-            <span class="text-sm font-semibold">Amount Due</span>
-            <span class="text-base font-bold tabular-nums" [class.text-destructive]="dueMeta.isOverdue">
-              {{ amounts.amountDue | formatMoney }}
+          <div class="text-[12px] text-ink-faint mt-[3px]" style="letter-spacing:.02em">Books Standard</div>
+        </div>
+        <div class="text-right">
+          <div class="font-serif text-[13px] font-semibold uppercase text-ink-faint"
+               style="letter-spacing:.42em; padding-left:.42em">Invoice</div>
+          <div class="font-mono text-[24px] font-semibold mt-[6px]">{{ inv.number }}</div>
+        </div>
+      </header>
+
+      <!-- Thin rule -->
+      <div class="relative z-10 h-px bg-hair my-[34px]"></div>
+
+      <!-- ── Meta: Bill To (left) | Details (right) ─────────────────────── -->
+      <section class="relative z-10 grid grid-cols-2 gap-12">
+        <!-- Bill To -->
+        <div>
+          <div class="text-[11px] font-semibold uppercase text-ink-faint" style="letter-spacing:.16em">Bill to</div>
+          <div class="font-serif text-[18px] font-semibold mt-[10px] mb-[8px]">{{ inv.contactName }}</div>
+          <div class="text-[13.5px] text-ink-soft leading-[1.9]">VAT —</div>
+          <div class="text-[13.5px] text-ink-soft leading-[1.9]">{{ contact()?.email ?? '—' }}</div>
+          <div class="text-[12px] text-ink-faint mt-[10px]">
+            Outstanding
+            <span class="font-mono font-medium text-ink tabular-nums">
+              {{ (contact()?.balance ?? 0) | formatMoney }}
             </span>
           </div>
-          @if (dueMeta.dueLabel) {
-            <p class="text-right text-xs" [class.text-destructive]="dueMeta.isOverdue"
-                                          [class.text-muted-foreground]="!dueMeta.isOverdue">
-              {{ dueMeta.dueLabel }}
-            </p>
+        </div>
+        <!-- Details definition list -->
+        <dl class="flex flex-col text-[13px]">
+          @for (row of [
+            { dt: 'Reference', dd: (inv.salesOrderId ?? '—') },
+            { dt: 'Issue date', dd: (inv.date | formatDate) },
+            { dt: 'Due date',   dd: (inv.dueDate | formatDate), overdue: dueMeta().isOverdue && amounts().amountDue > 0 },
+            { dt: 'Currency',   dd: 'CNY' },
+            { dt: 'Terms',      dd: '30 Days' }
+          ]; track row.dt) {
+            <div class="flex justify-between items-baseline py-2 border-b border-hair first:pt-0 last:border-b-0">
+              <dt class="text-ink-faint">{{ row.dt }}</dt>
+              <dd class="font-mono font-medium tabular-nums ml-4"
+                  [style.color]="row.overdue ? '#b3392f' : '#26282f'">{{ row.dd }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <!-- ── Line items ──────────────────────────────────────────────────── -->
+      <section class="relative z-10 mt-11">
+        <div class="text-[11px] font-semibold uppercase text-ink-faint" style="letter-spacing:.16em">Line items</div>
+        <table class="w-full border-collapse mt-4">
+          <thead>
+            <tr>
+              <th class="text-left text-[11px] font-semibold uppercase text-ink-faint pb-3 border-b border-hair-strong" style="letter-spacing:.1em; border-bottom-width:1.5px">Description</th>
+              <th class="text-right text-[11px] font-semibold uppercase text-ink-faint pb-3 border-b border-hair-strong w-14" style="letter-spacing:.1em; border-bottom-width:1.5px">Qty</th>
+              <th class="text-right text-[11px] font-semibold uppercase text-ink-faint pb-3 border-b border-hair-strong w-32" style="letter-spacing:.1em; border-bottom-width:1.5px">Unit price</th>
+              <th class="text-right text-[11px] font-semibold uppercase text-ink-faint pb-3 border-b border-hair-strong w-32" style="letter-spacing:.1em; border-bottom-width:1.5px">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of inv.lines; track l.id) {
+              <tr>
+                <td class="py-[18px] border-b border-hair align-top">
+                  <div class="text-[15px] font-medium text-ink">{{ l.description }}</div>
+                  @if (l.itemCode) {
+                    <div class="font-mono text-[12px] text-ink-faint mt-[3px]" style="letter-spacing:.04em">{{ l.itemCode }}</div>
+                  }
+                </td>
+                <td class="pt-[20px] pb-[18px] border-b border-hair text-right align-top font-mono text-[14px] text-ink-soft tabular-nums">{{ l.quantity }}</td>
+                <td class="pt-[20px] pb-[18px] border-b border-hair text-right align-top font-mono text-[14px] text-ink-soft tabular-nums">{{ l.unitPrice | formatMoney }}</td>
+                <td class="pt-[20px] pb-[18px] border-b border-hair text-right align-top font-mono text-[14px] font-semibold text-ink tabular-nums">{{ l.amount | formatMoney }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Totals (accounting three-line hierarchy) -->
+        <div class="ml-auto w-[300px] mt-[22px]">
+          <!-- Subtotal -->
+          <div class="flex justify-between items-baseline py-[9px] text-[14px] text-ink-soft">
+            <span>Subtotal</span>
+            <span class="font-mono text-ink tabular-nums">{{ inv.subtotal | formatMoney }}</span>
+          </div>
+          <!-- VAT -->
+          <div class="flex justify-between items-baseline py-[9px] text-[14px] text-ink-soft">
+            <span>VAT</span>
+            <span class="font-mono text-ink tabular-nums">{{ inv.tax | formatMoney }}</span>
+          </div>
+          <!-- Total — 1.5px top border, serif, stamp-navy value -->
+          <div class="flex justify-between items-baseline mt-[6px] pt-[14px] font-serif text-[16px] font-semibold text-ink"
+               style="border-top:1.5px solid #cfc9ba">
+            <span>Total</span>
+            <span class="font-mono text-[17px] tabular-nums" style="color:#2b3566">{{ inv.total | formatMoney }}</span>
+          </div>
+          <!-- Paid -->
+          <div class="flex justify-between items-baseline py-[9px] text-[14px] text-ink-faint">
+            <span>Paid</span>
+            <span class="font-mono tabular-nums">−{{ amounts().amountPaid | formatMoney }}</span>
+          </div>
+          <!-- Amount Due — 3px double border -->
+          <div class="flex justify-between items-baseline mt-[10px] pt-[14px] font-semibold text-[15px] text-ink"
+               style="border-top:3px double #cfc9ba">
+            <span>Amount due</span>
+            <span class="font-mono text-[18px] font-semibold tabular-nums"
+                  [style.color]="dueMeta().isOverdue ? '#b3392f' : '#26282f'">
+              {{ amounts().amountDue | formatMoney }}
+            </span>
+          </div>
+          @if (dueMeta().dueLabel) {
+            <p class="text-right text-[12px] mt-1"
+               [style.color]="dueMeta().isOverdue ? '#b3392f' : '#8b8f99'">{{ dueMeta().dueLabel }}</p>
           }
         </div>
-      </div>
+      </section>
+
+    </article>
+    <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ── Document Flow ──────────────────────────────────────────────────── -->
+    <div class="mt-6 rounded-sm overflow-hidden" style="background:rgba(255,255,255,.65); border:1px solid #e7e2d6">
+      <button type="button"
+              class="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors"
+              style="font-family:inherit"
+              [style.background]="showFlow ? 'rgba(255,255,255,.8)' : 'transparent'"
+              (click)="showFlow = !showFlow">
+        <span class="text-[11px] font-semibold uppercase text-ink-faint" style="letter-spacing:.16em">Document Flow</span>
+        <div class="flex items-center gap-2">
+          @if (!showFlow) {
+            @for (chip of flowChips(); track chip) {
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] text-ink-soft"
+                    style="background:#ede8df">{{ chip }}</span>
+            }
+          }
+          <mat-icon class="icon-sm text-ink-faint transition-transform duration-200"
+                    [style.transform]="showFlow ? 'rotate(180deg)' : 'rotate(0deg)'">expand_more</mat-icon>
+        </div>
+      </button>
+
+      @if (showFlow) {
+        <div style="border-top:1px solid #e7e2d6">
+          @if (docFlowRows().length > 0) {
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="border-bottom:1px solid #e7e2d6; background:rgba(231,229,223,.4)">
+                  <th class="text-left text-[11px] font-medium text-ink-faint h-8 px-4 py-0">Type</th>
+                  <th class="text-left text-[11px] font-medium text-ink-faint h-8 px-4 py-0">No</th>
+                  <th class="text-left text-[11px] font-medium text-ink-faint h-8 px-4 py-0">Status</th>
+                  <th class="text-left text-[11px] font-medium text-ink-faint h-8 px-4 py-0">Date</th>
+                  <th class="text-right text-[11px] font-medium text-ink-faint h-8 px-4 py-0">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of docFlowRows(); track r.number) {
+                  <tr style="border-bottom:1px solid #ede8df" class="last:border-0 hover:bg-[rgba(255,255,255,.5)] transition-colors">
+                    <td class="px-4 py-2 text-[12px] text-ink-soft">{{ r.typeLabel }}</td>
+                    <td class="px-4 py-2"><a [routerLink]="r.routerLink" class="text-[12px] font-medium" style="color:#2b3566; text-decoration:none" onmouseenter="this.style.textDecoration='underline'" onmouseleave="this.style.textDecoration='none'">{{ r.number }}</a></td>
+                    <td class="px-4 py-2"><app-status-badge [status]="r.status" /></td>
+                    <td class="px-4 py-2 text-[12px] text-ink-faint font-mono tabular-nums">{{ r.date | formatDate }}</td>
+                    <td class="px-4 py-2 text-[12px] text-right font-mono tabular-nums font-medium text-ink">{{ r.amount | formatMoney }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="px-4 py-3 text-[13px] text-ink-faint">No linked documents.</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ── Supporting Info ─────────────────────────────────────────────────── -->
+    <div class="mt-2 rounded-sm overflow-hidden" style="background:rgba(255,255,255,.65); border:1px solid #e7e2d6">
+      <button type="button"
+              class="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors"
+              style="font-family:inherit"
+              (click)="showSupporting = !showSupporting">
+        <span class="text-[11px] font-semibold uppercase text-ink-faint" style="letter-spacing:.16em">Supporting Info</span>
+        <div class="flex items-center gap-2">
+          @if (!showSupporting) {
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] text-ink-soft" style="background:#ede8df">Activity 0</span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] text-ink-soft" style="background:#ede8df">Attachments 0</span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] text-ink-soft" style="background:#ede8df">Accounting: Posted</span>
+          }
+          <mat-icon class="icon-sm text-ink-faint transition-transform duration-200"
+                    [style.transform]="showSupporting ? 'rotate(180deg)' : 'rotate(0deg)'">expand_more</mat-icon>
+        </div>
+      </button>
+      @if (showSupporting) {
+        <div class="px-4 py-3" style="border-top:1px solid #e7e2d6">
+          <p class="text-[13px] text-ink-faint">Activity, attachments and accounting entries — coming soon.</p>
+        </div>
+      }
     </div>
 
   </div>
-  <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
-
-  <!-- ── Accordion: Document Flow ─────────────────────────────────────────── -->
-  <div class="card">
-    <button type="button"
-            class="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-muted/50 transition-colors"
-            (click)="showFlow = !showFlow">
-      <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Document Flow</span>
-      <div class="flex items-center gap-2">
-        <!-- chips: shown only when collapsed -->
-        @if (!showFlow) {
-          @for (chip of _flowChips; track chip) {
-            <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">{{ chip }}</span>
-          }
-        }
-        <mat-icon class="icon-sm text-muted-foreground transition-transform duration-200"
-                  [class.rotate-180]="showFlow">expand_more</mat-icon>
-      </div>
-    </button>
-
-    @if (showFlow) {
-      <div class="border-t border-border">
-        @if (docFlowRows.length > 0) {
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-border bg-muted/40">
-                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Type</th>
-                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">No</th>
-                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Status</th>
-                <th class="text-left text-xs font-medium text-muted-foreground h-8 px-4 py-0">Date</th>
-                <th class="text-right text-xs font-medium text-muted-foreground h-8 px-4 py-0">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (r of docFlowRows; track r.number) {
-                <tr class="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                  <td class="px-4 py-2 text-muted-foreground text-xs">{{ r.typeLabel }}</td>
-                  <td class="px-4 py-2"><a [routerLink]="r.routerLink" class="doc-link text-xs">{{ r.number }}</a></td>
-                  <td class="px-4 py-2"><app-status-badge [status]="r.status" /></td>
-                  <td class="px-4 py-2 text-xs text-muted-foreground tabular-nums">{{ r.date | formatDate }}</td>
-                  <td class="px-4 py-2 text-xs text-right tabular-nums font-medium">{{ r.amount | formatMoney }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <p class="px-4 py-3 text-sm text-muted-foreground">No linked documents.</p>
-        }
-      </div>
-    }
-  </div>
-
-  <!-- ── Accordion: Supporting Info ───────────────────────────────────────── -->
-  <div class="card">
-    <button type="button"
-            class="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-muted/50 transition-colors"
-            (click)="showSupporting = !showSupporting">
-      <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Supporting Info</span>
-      <div class="flex items-center gap-2">
-        @if (!showSupporting) {
-          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Activity 0</span>
-          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Attachments 0</span>
-          <span class="inline-flex items-center rounded-full bg-secondary text-secondary-foreground px-2 py-0.5 text-xs">Accounting: Posted</span>
-        }
-        <mat-icon class="icon-sm text-muted-foreground transition-transform duration-200"
-                  [class.rotate-180]="showSupporting">expand_more</mat-icon>
-      </div>
-    </button>
-
-    @if (showSupporting) {
-      <div class="border-t border-border px-4 py-3">
-        <p class="text-sm text-muted-foreground">Activity, attachments and accounting entries — coming soon.</p>
-      </div>
-    }
-  </div>
-
 </div>
 } @else {
-  <div class="p-6"><p class="text-sm text-muted-foreground">Invoice not found.</p></div>
+  <div class="inv-desk min-h-full flex items-center justify-center">
+    <p class="text-[14px] text-ink-faint">Invoice not found.</p>
+  </div>
 }

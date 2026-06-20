@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core'
-import { ActivatedRoute, RouterLink } from '@angular/router'
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core'
+import { RouterLink } from '@angular/router'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { DataService } from '../../../core/data/data.service'
@@ -11,11 +11,7 @@ import {
   getInvoiceAmounts,
   getInvoiceDueMeta,
 } from '../../../core/lib/invoice-document'
-import {
-  getDeliveryNotesForInvoice,
-  getInvoiceShipmentStatus,
-} from '../../../core/lib/stock-documents'
-import type { Invoice, Contact } from '../../../core/types'
+import { getDeliveryNotesForInvoice } from '../../../core/lib/stock-documents'
 
 interface DocFlowRow {
   typeLabel: string
@@ -26,9 +22,17 @@ interface DocFlowRow {
   routerLink: string[]
 }
 
+const STAMP_MAP: Record<string, { label: string; ink: string }> = {
+  Awaiting: { label: 'AWAITING PAYMENT', ink: '#a8761f' },
+  Paid:     { label: 'PAID',             ink: '#3f7d52' },
+  Overdue:  { label: 'OVERDUE',          ink: '#b3392f' },
+  Draft:    { label: 'DRAFT',            ink: '#8b8f99' },
+}
+
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
     MatIconModule, MatMenuModule,
@@ -37,78 +41,61 @@ interface DocFlowRow {
   ],
   templateUrl: './invoice-detail.component.html',
 })
-export class InvoiceDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute)
-  private data  = inject(DataService)
+export class InvoiceDetailComponent {
+  private data = inject(DataService)
 
-  invoice:    Invoice  | undefined
-  contact:    Contact  | undefined
+  // Route param bound automatically via withComponentInputBinding()
+  // Fixes the snapshot bug: navigating inv1→inv2 now re-derives all data
+  id = input.required<string>()
 
-  amounts  = { amountPaid: 0, amountDue: 0 }
-  dueMeta  = { dueDays: 0, isOverdue: false, dueLabel: null as string | null }
+  invoice  = computed(() => this.data.getInvoice(this.id()))
+  contact  = computed(() => {
+    const inv = this.invoice()
+    return inv ? this.data.contacts.find(c => c.id === inv.contactId) : undefined
+  })
+  amounts  = computed(() => {
+    const inv = this.invoice()
+    return inv ? getInvoiceAmounts(inv) : { amountPaid: 0, amountDue: 0 }
+  })
+  dueMeta  = computed(() => {
+    const inv = this.invoice()
+    return inv
+      ? getInvoiceDueMeta(inv, this.amounts().amountDue)
+      : { dueDays: 0, isOverdue: false, dueLabel: null as string | null }
+  })
+  stamp    = computed(() => STAMP_MAP[this.invoice()?.status ?? ''] ?? null)
 
-  deliveryNotes:  ReturnType<typeof getDeliveryNotesForInvoice> = []
-  paymentCount = 0
-  docFlowRows: DocFlowRow[] = []
+  docFlowRows = computed((): DocFlowRow[] => {
+    const inv = this.invoice()
+    if (!inv) return []
+    const rows: DocFlowRow[] = []
+    const q  = inv.quotationId  ? this.data.getQuotation(inv.quotationId)   : undefined
+    const so = inv.salesOrderId ? this.data.getSalesOrder(inv.salesOrderId) : undefined
+    const dns   = getDeliveryNotesForInvoice(inv.id)
+    const alloc = getInvoiceAllocations(inv.id)
+    if (q)  rows.push({ typeLabel: 'Quote',         number: q.number,  status: q.status,  date: q.date,  amount: q.total,  routerLink: ['/sales/quotes',  q.id] })
+    if (so) rows.push({ typeLabel: 'Sales Order',   number: so.number, status: so.status, date: so.date, amount: so.total, routerLink: ['/sales/orders', so.id] })
+    for (const dn of dns)    rows.push({ typeLabel: 'Delivery Note', number: dn.number, status: dn.status, date: dn.date, amount: dn.lines.reduce((s, l) => s + l.quantity * l.unitCost, 0), routerLink: ['/sales/delivery-notes', dn.id] })
+    for (const a of alloc)   rows.push({ typeLabel: 'Payment',       number: a.paymentNumber, status: 'Paid', date: a.paymentDate, amount: a.amount, routerLink: ['/sales/payments', a.paymentId] })
+    return rows.sort((a, b) => a.date.localeCompare(b.date))
+  })
 
-  // accordion open/close state
+  flowChips = computed((): string[] => {
+    const inv = this.invoice()
+    if (!inv) return []
+    const q    = inv.quotationId  ? this.data.getQuotation(inv.quotationId) : undefined
+    const so   = inv.salesOrderId ? this.data.getSalesOrder(inv.salesOrderId) : undefined
+    const dns  = getDeliveryNotesForInvoice(inv.id)
+    const al   = getInvoiceAllocations(inv.id)
+    return [
+      q  ? 'Quote 1' : null,
+      so ? 'Sales Order 1' : null,
+      dns.length ? `Delivery Note ${dns.length}` : null,
+      al.length  ? `Payment ${al.length}` : null,
+    ].filter(Boolean) as string[]
+  })
+
+  // Simple accordion state (not signals — no need, just view toggle)
   showFlow       = true
   showSupporting = false
-
-  ngOnInit(): void {
-    const id  = this.route.snapshot.paramMap.get('id')!
-    const inv = this.data.getInvoice(id)
-    if (!inv) return
-    this.invoice = inv
-
-    this.contact = this.data.contacts.find((c) => c.id === inv.contactId)
-    const quotation  = inv.quotationId  ? this.data.getQuotation(inv.quotationId)   : undefined
-    const salesOrder = inv.salesOrderId ? this.data.getSalesOrder(inv.salesOrderId) : undefined
-
-    this.amounts = getInvoiceAmounts(inv)
-    this.dueMeta = getInvoiceDueMeta(inv, this.amounts.amountDue)
-
-    this.deliveryNotes = getDeliveryNotesForInvoice(inv.id)
-    const allocations  = getInvoiceAllocations(inv.id)
-    this.paymentCount  = allocations.length
-
-    const shipStatus    = getInvoiceShipmentStatus(inv)
-    const needsShipment = shipStatus === 'not_shipped' || shipStatus === 'partially_shipped'
-    void needsShipment  // referenced by future "Create DN" action
-
-    const rows: DocFlowRow[] = []
-
-    if (quotation) {
-      rows.push({ typeLabel: 'Quote', number: quotation.number, status: quotation.status,
-                  date: quotation.date, amount: quotation.total,
-                  routerLink: ['/sales/quotes', quotation.id] })
-    }
-    if (salesOrder) {
-      rows.push({ typeLabel: 'Sales Order', number: salesOrder.number, status: salesOrder.status,
-                  date: salesOrder.date, amount: salesOrder.total,
-                  routerLink: ['/sales/orders', salesOrder.id] })
-    }
-    for (const dn of this.deliveryNotes) {
-      rows.push({ typeLabel: 'Delivery Note', number: dn.number, status: dn.status,
-                  date: dn.date, amount: dn.lines.reduce((s, l) => s + l.quantity * l.unitCost, 0),
-                  routerLink: ['/sales/delivery-notes', dn.id] })
-    }
-    for (const a of allocations) {
-      rows.push({ typeLabel: 'Payment', number: a.paymentNumber, status: 'Paid',
-                  date: a.paymentDate, amount: a.amount,
-                  routerLink: ['/sales/payments', a.paymentId] })
-    }
-    rows.sort((a, b) => a.date.localeCompare(b.date))
-    this.docFlowRows = rows
-
-    // flow chip counts (for collapsed accordion header)
-    this._flowChips = [
-      quotation  ? 'Quote 1' : null,
-      salesOrder ? 'Sales Order 1' : null,
-      this.deliveryNotes.length ? `Delivery Note ${this.deliveryNotes.length}` : null,
-      this.paymentCount ? `Payment ${this.paymentCount}` : null,
-    ].filter(Boolean) as string[]
-  }
-
-  _flowChips: string[] = []
 }

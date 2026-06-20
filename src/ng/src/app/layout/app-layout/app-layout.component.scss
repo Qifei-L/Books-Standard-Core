@@ -1,38 +1,91 @@
-.shell { height: 100vh; }
+.shell {
+  height: 100vh;
+  background: #e7e5df;
+}
 
 .sidenav {
-  width: 210px;
-  border-right: 1px solid #dde1e7;
+  width: 224px;
+  border-right: 1px solid #cfc9ba;
   display: flex;
   flex-direction: column;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .25)),
+    #faf8f2;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 14px 12px;
-  border-bottom: 1px solid #dde1e7;
+  gap: 10px;
+  height: 60px;
+  padding: 0 18px;
+  border-bottom: 1px solid #e7e2d6;
   flex-shrink: 0;
 }
-.brand-icon { color: #0052cc; font-size: 20px; width: 20px; height: 20px; }
-.brand-text  { font-weight: 700; font-size: 14px; color: #172b4d; letter-spacing: -0.2px; }
+.brand-icon {
+  display: grid;
+  place-items: center;
+  color: #2b3566;
+  background: #eef0f8;
+  border: 1px solid rgba(43, 53, 102, .18);
+  border-radius: 7px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+}
+.brand-text  {
+  font-weight: 700;
+  font-size: 14px;
+  color: #26282f;
+  letter-spacing: 0;
+}
 
-.nav-list { flex: 1; padding: 6px 0; }
+.nav-list {
+  flex: 1;
+  padding: 10px;
+}
+
+.nav-list a[mat-list-item] {
+  height: 42px !important;
+  margin-bottom: 3px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #5a5e68 !important;
+}
+
+.nav-list a[mat-list-item]:hover {
+  background: rgba(237, 232, 223, .55) !important;
+}
+
+.nav-list .mat-icon {
+  color: #8b8f99;
+}
 
 .sidenav-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
-  border-top: 1px solid #dde1e7;
+  min-height: 58px;
+  padding: 0 14px 0 16px;
+  border-top: 1px solid #e7e2d6;
   flex-shrink: 0;
 }
-.company { font-size: 11px; color: #6b778c; font-weight: 500; }
+.company { font-size: 12px; color: #5a5e68; font-weight: 600; }
+
+.sidenav-footer button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e7e2d6;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .45);
+  color: #5a5e68;
+}
 
 .main-area {
   display: flex;
   flex-direction: column;
-  background: #f5f6f8;
+  background:
+    radial-gradient(120% 70% at 50% -15%, rgba(255, 255, 255, .62), transparent 58%),
+    #e7e5df;
   overflow-y: auto;
 }

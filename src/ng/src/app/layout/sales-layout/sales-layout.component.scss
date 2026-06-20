@@ -5,13 +5,55 @@
 }
 
 .sub-nav {
-  background: #fff;
-  border-bottom: 1px solid #dde1e7;
-  padding: 0 16px;
+  background: rgba(253, 252, 249, .92);
+  border-bottom: 1px solid #cfc9ba;
+  padding: 0 18px;
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
 
 .settings-icon { font-size: 16px; width: 16px; height: 16px; }
+
+.sub-nav .mat-mdc-tab-link {
+  position: relative;
+  height: 60px;
+  padding: 0 18px !important;
+  color: #5a5e68 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.sub-nav .mat-mdc-tab-link.mdc-tab--active {
+  color: #26282f !important;
+}
+
+.sub-nav .mat-mdc-tab-link.mdc-tab--active::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 28px;
+  z-index: -1;
+  border: 1px solid rgba(207, 201, 186, .58);
+  border-radius: 7px;
+  background: #fff;
+}
+
+.sub-nav .mat-mdc-tab-link.mdc-tab--active::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 2px;
+  background: #2b3566;
+}
+
+.sub-nav .mdc-tab-indicator {
+  display: none;
+}
 
 .panel {
   flex: 1;

@@ -7,7 +7,7 @@
   </div>
 
   <mat-card appearance="outlined" class="table-card">
-    <table mat-table [dataSource]="rows" class="w-full">
+    <table mat-table [dataSource]="rows()" class="w-full">
 
       <ng-container matColumnDef="number">
         <th mat-header-cell *matHeaderCellDef>Invoice #</th>

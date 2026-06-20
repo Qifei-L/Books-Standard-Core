@@ -12,16 +12,16 @@ export function MoneyDisplay({
   const color =
     negative === 'red'
       ? amount < 0
-        ? 'text-red-600'
+        ? 'text-danger'
         : ''
       : negative === 'green'
         ? amount > 0
-          ? 'text-green-600'
+          ? 'text-success'
           : ''
         : ''
 
   return (
-    <span className={cn('tabular-nums font-medium', color, className)}>
+    <span className={cn('tabular-nums font-medium text-foreground', color, className)}>
       {formatMoney(amount)}
     </span>
   )

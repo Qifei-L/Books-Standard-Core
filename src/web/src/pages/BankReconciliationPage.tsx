@@ -6,7 +6,7 @@ import { formatDate, formatMoney } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
+import { SoftStatusBadge } from '@/components/shared/StatusBadge'
 
 export function BankReconciliationPage() {
   const [selected, setSelected] = useState<string[]>([])
@@ -34,9 +34,7 @@ export function BankReconciliationPage() {
           <div className="text-sm text-muted-foreground">Xero 账面余额</div>
           <MoneyDisplay amount={account.balance} />
         </div>
-        <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-          {unreconciled.length} 笔待对账
-        </Badge>
+        <SoftStatusBadge label={`${unreconciled.length} 笔待对账`} tone="partial" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -48,7 +46,7 @@ export function BankReconciliationPage() {
             {unreconciled.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/30"
+                className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-secondary/80"
               >
                 <Checkbox
                   checked={selected.includes(tx.id)}

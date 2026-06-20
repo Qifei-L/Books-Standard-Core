@@ -2,6 +2,20 @@ import type { InvoiceStatus, QuotationStatus } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
+/** Soft badge palette for financial document statuses */
+const soft = {
+  draft: 'border-transparent bg-[#F3F4F6] text-[#4B5563]',
+  sent: 'border-transparent bg-primary-soft text-primary',
+  accepted: 'border-transparent bg-success-soft text-success',
+  converted: 'border-transparent bg-[#EDE9FE] text-[#6D28D9]',
+  paid: 'border-transparent bg-success-soft text-success',
+  partial: 'border-transparent bg-warning-soft text-warning',
+  overdue: 'border-transparent bg-danger-soft text-danger',
+  voided: 'border-transparent bg-[#F3F4F6] text-muted-foreground',
+  info: 'border-transparent bg-info-soft text-info',
+  danger: 'border-transparent bg-danger-soft text-danger',
+} as const
+
 const invoiceLabels: Record<InvoiceStatus, string> = {
   Draft: 'Draft',
   Awaiting: 'Awaiting',
@@ -10,10 +24,10 @@ const invoiceLabels: Record<InvoiceStatus, string> = {
 }
 
 const invoiceStyles: Record<InvoiceStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Awaiting: 'bg-amber-100 text-amber-700',
-  Paid: 'bg-green-100 text-green-700',
-  Overdue: 'bg-red-100 text-red-700',
+  Draft: soft.draft,
+  Awaiting: soft.sent,
+  Paid: soft.paid,
+  Overdue: soft.overdue,
 }
 
 const quotationLabels: Record<QuotationStatus, string> = {
@@ -26,12 +40,12 @@ const quotationLabels: Record<QuotationStatus, string> = {
 }
 
 const quotationStyles: Record<QuotationStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-amber-100 text-amber-800',
-  Accepted: 'bg-blue-100 text-blue-700',
-  Declined: 'bg-red-100 text-red-700',
-  Expired: 'bg-gray-100 text-gray-500',
-  ConvertedToInvoice: 'bg-green-100 text-green-700',
+  Draft: soft.draft,
+  Sent: soft.sent,
+  Accepted: soft.accepted,
+  Declined: soft.danger,
+  Expired: soft.voided,
+  ConvertedToInvoice: soft.converted,
 }
 
 export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
@@ -52,10 +66,10 @@ export function QuotationStatusBadge({ status }: { status: QuotationStatus }) {
 
 export function DocStatusBadge({ status }: { status: 'Draft' | 'Submitted' | 'Posted' | 'Cancelled' }) {
   const map = {
-    Draft: { label: 'Draft', className: 'bg-gray-100 text-gray-600' },
-    Submitted: { label: 'Submitted', className: 'bg-blue-100 text-blue-700' },
-    Posted: { label: 'Posted', className: 'bg-green-100 text-green-700' },
-    Cancelled: { label: 'Cancelled', className: 'bg-gray-100 text-gray-500' },
+    Draft: { label: 'Draft', className: soft.draft },
+    Submitted: { label: 'Submitted', className: soft.sent },
+    Posted: { label: 'Posted', className: soft.paid },
+    Cancelled: { label: 'Cancelled', className: soft.voided },
   }
   const { label, className } = map[status]
   return (
@@ -71,4 +85,13 @@ export function isQuotationTerminal(status: QuotationStatus): boolean {
 
 export function canConvertQuotation(status: QuotationStatus): boolean {
   return status === 'Sent' || status === 'Accepted'
+}
+
+/** Reusable soft badge for ad-hoc statuses across pages */
+export function SoftStatusBadge({ label, tone }: { label: string; tone: keyof typeof soft }) {
+  return (
+    <Badge variant="secondary" className={cn('font-normal', soft[tone])}>
+      {label}
+    </Badge>
+  )
 }

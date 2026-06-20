@@ -54,7 +54,7 @@ export function TrialBalancePage() {
                   </TableCell>
                 </TableRow>
               ))}
-              <TableRow className="bg-muted/30 font-semibold">
+              <TableRow className="bg-secondary font-semibold">
                 <TableCell colSpan={2}>Total</TableCell>
                 <TableCell className="text-right">{formatMoney(totalDebit)}</TableCell>
                 <TableCell className="text-right">{formatMoney(totalCredit)}</TableCell>
@@ -106,7 +106,7 @@ export function ProfitAndLossPage() {
           </div>
           <div className="flex justify-between border-t pt-4 text-lg font-semibold">
             <span>Net profit</span>
-            <MoneyDisplay amount={totalRev - totalExp} className="text-green-600" />
+            <MoneyDisplay amount={totalRev - totalExp} className="text-success" />
           </div>
         </CardContent>
       </Card>

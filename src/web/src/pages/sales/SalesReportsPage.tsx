@@ -33,7 +33,7 @@ export function SalesReportsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {reports.map((report) => (
           <Link key={report.to} to={report.to}>
-            <Card className="transition-colors hover:bg-muted/30">
+            <Card className="transition-colors hover:bg-secondary/80">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base">{report.title}</CardTitle>
                 <ChevronRight className="size-4 text-muted-foreground" />
@@ -58,7 +58,7 @@ export function SalesReportDetailPage({ title }: { title: string }) {
           Report data will connect to the API in Phase 1.
         </CardContent>
       </Card>
-      <Link to="/sales/reports" className="mt-4 inline-block text-sm text-primary hover:underline">
+      <Link to="/sales/reports" className="mt-4 inline-block text-sm text-link">
         ← Back to Sales Reports
       </Link>
     </div>

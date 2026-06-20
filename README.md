@@ -20,6 +20,8 @@ npm run dev
 
 - [产品说明](docs/PRODUCT.md)
 - [UI 规格](docs/UI-SPEC.md)
+- [领域模型](docs/DOMAIN.md)
+- [Phase 0 进度](docs/PHASE0-PROGRESS.md)
 - [API 契约草案](docs/API-CONTRACT.md)
 
 ## 技术栈

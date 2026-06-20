@@ -30,7 +30,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Business overview and tasks</p>
       </div>
 
@@ -64,7 +64,7 @@ export function DashboardPage() {
           <CardContent>
             <MoneyDisplay
               amount={dashboardStats.netProfit}
-              className="text-2xl text-green-600"
+              className="text-2xl text-success"
             />
           </CardContent>
         </Card>
@@ -90,14 +90,14 @@ export function DashboardPage() {
               <Link
                 key={task.id}
                 to={task.link}
-                className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-secondary"
               >
                 {task.type === 'reconcile' ? (
                   <Landmark className="mt-0.5 size-4 text-primary" />
                 ) : task.type === 'invoice' ? (
-                  <ArrowDownLeft className="mt-0.5 size-4 text-amber-500" />
+                  <ArrowDownLeft className="mt-0.5 size-4 text-warning" />
                 ) : (
-                  <ArrowUpRight className="mt-0.5 size-4 text-red-500" />
+                  <ArrowUpRight className="mt-0.5 size-4 text-danger" />
                 )}
                 <span className="text-sm">{task.title}</span>
               </Link>
@@ -117,8 +117,8 @@ export function DashboardPage() {
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${v / 1000}k`} />
                 <Tooltip formatter={(v) => formatMoney(Number(v))} />
                 <Legend />
-                <Bar dataKey="cashIn" name="流入" fill="#13b5ea" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="cashOut" name="流出" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="cashIn" name="流入" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="cashOut" name="流出" fill="#667085" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -153,9 +153,9 @@ export function DashboardPage() {
                 <div key={ba.id} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     {mismatch ? (
-                      <AlertCircle className="size-4 text-amber-500" />
+                      <AlertCircle className="size-4 text-warning" />
                     ) : (
-                      <CheckCircle2 className="size-4 text-green-500" />
+                      <CheckCircle2 className="size-4 text-success" />
                     )}
                     <span>{ba.name}</span>
                   </div>

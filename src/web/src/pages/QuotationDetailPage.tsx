@@ -162,7 +162,7 @@ export function QuotationDetailPage() {
         </p>
       )}
 
-      <Link to="/sales/quotes" className="mt-4 inline-block text-sm text-primary hover:underline">
+      <Link to="/sales/quotes" className="mt-4 inline-block text-sm text-link">
         ← Back to list
       </Link>
     </div>

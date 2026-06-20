@@ -1,16 +1,43 @@
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { TablePagination } from '@/components/shared/TablePagination'
 import { MoneyDisplay } from '@/components/shared/MoneyDisplay'
-import { payments } from '@/data/mock'
 import { EmptyTableRow, columns as col } from '@/components/shared/DataTable'
+import { payments } from '@/data/mock'
+import { formatDate, formatMoney } from '@/lib/utils'
 import {
   getAdvanceAmount,
   getPaymentKind,
   type PaymentKind,
 } from '@/types'
-import { Badge } from '@/components/ui/badge'
+import { SoftStatusBadge } from '@/components/shared/StatusBadge'
+import { useSalesSettings } from '@/contexts/SalesSettingsContext'
+import { useSalesListPage } from '@/hooks/useSalesListPage'
+import {
+  countPaymentsByTab,
+  defaultPaymentListTab,
+  filterPayments,
+  formatInvoiceDateFilterLabel,
+  parsePaymentListTabFromParams,
+  paymentListTabs,
+  type PaymentListTab,
+} from '@/lib/salesModuleListFilters'
+import {
+  getDateFilterState,
+  getSalesCustomerOptions,
+  paginateItems,
+  salesListUrl,
+  SALES_PAGE_SIZE_OPTIONS,
+} from '@/lib/salesListQuery'
+import {
+  ActiveAdvancedFilterPills,
+  SalesAdvancedFilterButton,
+} from '@/components/sales/SalesAdvancedFilter'
+import { SalesListSummary } from '@/components/sales/SalesListSummary'
+import { SalesListViewsMenu } from '@/components/sales/SalesListViewsMenu'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -19,7 +46,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn, formatDate, formatMoney } from '@/lib/utils'
 
 const kindLabels: Record<PaymentKind, string> = {
   Applied: 'Apply to invoices',
@@ -27,109 +53,202 @@ const kindLabels: Record<PaymentKind, string> = {
   Mixed: 'Mixed',
 }
 
-const kindStyles: Record<PaymentKind, string> = {
-  Applied: 'bg-green-100 text-green-700',
-  Advance: 'bg-violet-100 text-violet-700',
-  Mixed: 'bg-blue-100 text-blue-700',
+const kindTone: Record<PaymentKind, 'paid' | 'converted' | 'sent'> = {
+  Applied: 'paid',
+  Advance: 'converted',
+  Mixed: 'sent',
 }
 
 function PaymentKindBadge({ kind }: { kind: PaymentKind }) {
-  return (
-    <Badge variant="secondary" className={cn('font-normal', kindStyles[kind])}>
-      {kindLabels[kind]}
-    </Badge>
-  )
-}
-
-function filterByTab(items: typeof payments, tab: string) {
-  if (tab === 'all') return items
-  if (tab === 'advance') return items.filter((p) => getAdvanceAmount(p) > 0)
-  return items.filter((p) => p.allocations.length > 0)
+  return <SoftStatusBadge label={kindLabels[kind]} tone={kindTone[kind]} />
 }
 
 export function PaymentsPage() {
-  const [searchParams] = useSearchParams()
-  const defaultTab = searchParams.get('tab') === 'advance' ? 'advance' : 'all'
+  const { settings } = useSalesSettings()
+  const allowAdvance = settings.allowUnallocatedReceipts
+
+  const {
+    query,
+    status,
+    setStatus,
+    applyQuery,
+    applyView,
+    viewQuery,
+    advancedFilterProps,
+  } = useSalesListPage(defaultPaymentListTab, (params) =>
+    parsePaymentListTabFromParams(params, allowAdvance),
+  )
+
+  const dateState = getDateFilterState(query)
+  const dateLabel = formatInvoiceDateFilterLabel(dateState)
+  const customerOptions = getSalesCustomerOptions()
+
+  const visibleTabs = allowAdvance
+    ? paymentListTabs
+    : paymentListTabs.filter((t) => t.id !== 'advance')
+
+  const scopedForStatusCounts = useMemo(
+    () => filterPayments(payments, 'all', query),
+    [query],
+  )
+
+  const statusCounts = useMemo(
+    () => countPaymentsByTab(scopedForStatusCounts, query, allowAdvance),
+    [scopedForStatusCounts, query, allowAdvance],
+  )
+
+  const filteredRows = useMemo(
+    () => filterPayments(payments, status, query),
+    [status, query],
+  )
+
+  const pagination = useMemo(
+    () => paginateItems(filteredRows, query.page, query.pageSize),
+    [filteredRows, query.page, query.pageSize],
+  )
+
+  const totalAmount = useMemo(
+    () => filteredRows.reduce((s, p) => s + p.amount, 0),
+    [filteredRows],
+  )
+
+  const summaryParts = useMemo(() => {
+    const tabLabel = visibleTabs.find((t) => t.id === status)?.label.toLowerCase() ?? status
+    const parts = [
+      `${filteredRows.length} payment${filteredRows.length === 1 ? '' : 's'}`,
+      tabLabel,
+    ]
+    if (dateLabel) parts.push(dateLabel.toLowerCase())
+    if (
+      filteredRows.length > 0 &&
+      (pagination.rangeStart !== 1 || pagination.rangeEnd !== filteredRows.length)
+    ) {
+      parts.push(`showing ${pagination.rangeStart}–${pagination.rangeEnd}`)
+    }
+    if (filteredRows.length > 0) {
+      parts.push(`${formatMoney(totalAmount)} received`)
+    }
+    return parts
+  }, [filteredRows.length, status, visibleTabs, dateLabel, pagination, totalAmount])
+
+  const customerIdSet = new Set(query.customerIds)
+
+  const description = allowAdvance
+    ? 'Apply to invoices (AR) or record unallocated amounts as customer advances (liability)'
+    : 'Apply customer receipts to open invoices (accounts receivable)'
 
   return (
-    <div>
+    <div className="space-y-4">
       <PageHeader
+        className="mb-0"
         title="Receive Payments"
-        description="Apply to invoices (AR) or record unallocated amounts as customer advances (liability)"
+        description={description}
         action={{ label: '+ New Payment', to: '/sales/payments/new' }}
-      />
+      >
+        <SalesListViewsMenu module="payments" query={viewQuery} onApplyView={applyView} />
+        <SalesAdvancedFilterButton
+          entityLabel="payments"
+          dateFieldMode="single"
+          customerOptions={customerOptions}
+          {...advancedFilterProps}
+        />
+      </PageHeader>
 
-      <Tabs defaultValue={defaultTab}>
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="applied">Applied / Mixed</TabsTrigger>
-          <TabsTrigger value="advance">Advances only</TabsTrigger>
+      <Tabs value={status} onValueChange={(v) => setStatus(v as PaymentListTab)} className="gap-4">
+        <TabsList className="h-9 flex-wrap">
+          {visibleTabs.map((tab) => (
+            <TabsTrigger key={tab.id} value={tab.id} className="gap-1.5">
+              {tab.label}
+              {statusCounts[tab.id] > 0 && (
+                <span className="tabular-nums text-xs opacity-70">{statusCounts[tab.id]}</span>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
-        {(['all', 'applied', 'advance'] as const).map((tab) => (
-          <TabsContent key={tab} value={tab}>
-            <PaymentTable data={filterByTab(payments, tab)} />
-          </TabsContent>
-        ))}
+
+        <Card>
+          <CardContent className="p-0">
+            <ActiveAdvancedFilterPills {...advancedFilterProps} />
+            <SalesListSummary parts={summaryParts} />
+
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{col.number}</TableHead>
+                    <TableHead>{col.customer}</TableHead>
+                    <TableHead>{col.date}</TableHead>
+                    <TableHead className="text-right">{col.amount}</TableHead>
+                    <TableHead className="text-right">To A/R</TableHead>
+                    <TableHead className="text-right">To advance</TableHead>
+                    <TableHead>{col.type}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pagination.items.length === 0 ? (
+                    <EmptyTableRow colSpan={7} />
+                  ) : (
+                    pagination.items.map((p) => {
+                      const allocated = p.allocations.reduce((s, a) => s + a.amount, 0)
+                      const advance = getAdvanceAmount(p)
+                      return (
+                        <TableRow key={p.id}>
+                          <TableCell>
+                            <Link to={`/sales/payments/${p.id}`} className="text-link font-medium">
+                              {p.number}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="max-w-[160px] truncate">
+                            {customerIdSet.has(p.contactId) ? (
+                              <span className="font-medium text-foreground">{p.contactName}</span>
+                            ) : (
+                              <Link
+                                to={salesListUrl('/sales/payments', status, defaultPaymentListTab, [
+                                  p.contactId,
+                                ])}
+                                className="text-link"
+                                title={`Show all payments for ${p.contactName}`}
+                              >
+                                {p.contactName}
+                              </Link>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{formatDate(p.date)}</TableCell>
+                          <TableCell className="text-right">
+                            <MoneyDisplay amount={p.amount} />
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
+                            {allocated > 0 ? formatMoney(allocated) : '—'}
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
+                            {advance > 0 ? formatMoney(advance) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            <PaymentKindBadge kind={getPaymentKind(p)} />
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <TablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              pageSize={pagination.pageSize}
+              pageSizeOptions={SALES_PAGE_SIZE_OPTIONS}
+              onPageChange={(nextPage) => applyQuery({ page: nextPage })}
+              onPageSizeChange={(nextSize) => applyQuery({ pageSize: nextSize, page: 1 })}
+            />
+          </CardContent>
+        </Card>
       </Tabs>
     </div>
-  )
-}
-
-function PaymentTable({ data }: { data: typeof payments }) {
-  return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{col.number}</TableHead>
-              <TableHead>{col.customer}</TableHead>
-              <TableHead>{col.date}</TableHead>
-              <TableHead className="text-right">{col.amount}</TableHead>
-              <TableHead className="text-right">To A/R</TableHead>
-              <TableHead className="text-right">To advance</TableHead>
-              <TableHead>{col.type}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
-              <EmptyTableRow colSpan={7} />
-            ) : (
-              data.map((p) => {
-              const allocated = p.allocations.reduce((s, a) => s + a.amount, 0)
-              const advance = getAdvanceAmount(p)
-              return (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <Link
-                      to={`/sales/payments/${p.id}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {p.number}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{p.contactName}</TableCell>
-                  <TableCell>{formatDate(p.date)}</TableCell>
-                  <TableCell className="text-right">
-                    <MoneyDisplay amount={p.amount} />
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {allocated > 0 ? formatMoney(allocated) : '—'}
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {advance > 0 ? formatMoney(advance) : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <PaymentKindBadge kind={getPaymentKind(p)} />
-                  </TableCell>
-                </TableRow>
-              )
-            })
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
   )
 }
 
@@ -188,10 +307,7 @@ export function PaymentDetailPage() {
                 {payment.allocations.map((a) => (
                   <TableRow key={a.invoiceId}>
                     <TableCell>
-                      <Link
-                        to={`/sales/invoices/${a.invoiceId}`}
-                        className="text-primary hover:underline"
-                      >
+                      <Link to={`/sales/invoices/${a.invoiceId}`} className="text-link">
                         {a.invoiceNumber}
                       </Link>
                     </TableCell>
@@ -235,7 +351,9 @@ export function PaymentDetailPage() {
         <CardContent className="font-mono text-sm">
           <div className="space-y-1">
             <div>Dr Bank {formatMoney(payment.amount)}</div>
-            {allocated > 0 && <div className="pl-4">Cr Accounts Receivable {formatMoney(allocated)}</div>}
+            {allocated > 0 && (
+              <div className="pl-4">Cr Accounts Receivable {formatMoney(allocated)}</div>
+            )}
             {advance > 0 && (
               <div className="pl-4">Cr Customer Advances (Liability) {formatMoney(advance)}</div>
             )}
@@ -243,7 +361,7 @@ export function PaymentDetailPage() {
         </CardContent>
       </Card>
 
-      <Link to="/sales/payments" className="mt-4 inline-block text-sm text-primary hover:underline">
+      <Link to="/sales/payments" className="mt-4 inline-block text-sm text-link">
         ← Back to list
       </Link>
     </div>

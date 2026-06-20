@@ -18,6 +18,15 @@ Xero 等云记账 SaaS 订阅费用较高。本项目旨在自建轻量记账系
 - **Xero**：视觉、首页 Widget、银行对账、报表、小微记账体验
 - **ERPNext Sales**：销售流程（报价 → 订单 → 发票 → 收款）、Submit 工作流、单据关联
 
+## Phase 0 当前能力（摘要）
+
+详见 [Phase 0 进度](PHASE0-PROGRESS.md) 与 [领域模型](DOMAIN.md)。
+
+- Sales 四列表统一 Views / Filter / Pagination
+- Item 主数据 + 发票 Item 选择
+- Sales Delivery Note 与 Inventory Adjustment **分离**
+- Invoice 详情：Related 轻列表（Quote / Order / DN）+ Payments 表格
+
 ## 非目标（v0.1）
 
 - 真实银行 Feed / 支付网关

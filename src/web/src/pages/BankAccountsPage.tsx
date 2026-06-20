@@ -45,12 +45,12 @@ export function BankAccountsPage() {
                       </TableCell>
                       <TableCell>
                         {mismatch ? (
-                          <span className="flex items-center gap-1 text-sm text-amber-600">
+                          <span className="flex items-center gap-1 text-sm text-warning">
                             <AlertCircle className="size-4" />
                             Out of sync
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-sm text-green-600">
+                          <span className="flex items-center gap-1 text-sm text-success">
                             <CheckCircle2 className="size-4" />
                             In sync
                           </span>

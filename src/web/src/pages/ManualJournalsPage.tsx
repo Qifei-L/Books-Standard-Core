@@ -15,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
 
 export function ManualJournalsPage() {
   return (
@@ -47,7 +46,7 @@ export function ManualJournalsPage() {
                     <TableCell>
                       <Link
                         to={`/accounting/manual-journals/${je.id}`}
-                        className="font-medium text-primary hover:underline"
+                        className="text-link"
                       >
                         {je.narration}
                       </Link>
@@ -135,12 +134,12 @@ export function JournalDetailPage() {
         </p>
       )}
       {balanced && entry.status === 'Draft' && (
-        <p className={cn('mt-2 text-sm text-green-600')}>Debits and credits balance</p>
+        <p className="mt-2 text-sm text-success">Debits and credits balance</p>
       )}
 
       <Link
         to="/accounting/manual-journals"
-        className="mt-4 inline-block text-sm text-primary hover:underline"
+        className="mt-4 inline-block text-sm text-link"
       >
         ← Back to list
       </Link>

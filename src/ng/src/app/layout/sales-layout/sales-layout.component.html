@@ -1,0 +1,19 @@
+<div class="sales-shell">
+  <nav mat-tab-nav-bar [tabPanel]="panel" class="sub-nav">
+    @for (item of salesSubNav; track item.to) {
+      <a mat-tab-link
+         [routerLink]="item.to"
+         routerLinkActive #rla="routerLinkActive"
+         [active]="rla.isActive">
+        @if (item.iconOnly) {
+          <mat-icon class="settings-icon">settings</mat-icon>
+        } @else {
+          {{ item.label }}
+        }
+      </a>
+    }
+  </nav>
+  <mat-tab-nav-panel #panel class="panel">
+    <router-outlet />
+  </mat-tab-nav-panel>
+</div>

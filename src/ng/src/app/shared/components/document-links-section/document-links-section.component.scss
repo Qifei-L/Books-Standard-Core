@@ -1,0 +1,57 @@
+.doc-card { overflow: hidden; }
+
+.card-title {
+  padding: 10px 16px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #172b4d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.group { padding: 8px 16px 10px; }
+
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #97a0af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.action-btn {
+  height: 24px;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0 6px;
+  min-width: 0;
+  color: #0052cc;
+}
+.btn-icon { font-size: 13px; width: 13px; height: 13px; margin-right: 2px; }
+
+.doc-table { width: 100%; border-collapse: collapse; }
+.doc-row:hover td { background: #f8f9fa; }
+.col-num    { padding: 4px 8px 4px 0; width: 30%; }
+.col-date   { padding: 4px 8px; width: 24%; font-size: 12px; }
+.col-status { padding: 4px 8px; }
+.col-amount {
+  padding: 4px 0 4px 8px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.empty-msg { font-size: 12px; margin: 0; padding: 2px 0; }
+
+.total-row { border-top: 1px solid #f4f5f7; }
+.total-label { padding: 6px 0; font-size: 12px; }
+.total-val   { font-weight: 700; }
+
+.divider { height: 1px; background: #f4f5f7; margin: 0 16px; }

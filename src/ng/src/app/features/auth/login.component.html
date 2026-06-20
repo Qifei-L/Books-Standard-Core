@@ -1,0 +1,35 @@
+<div class="login-page">
+  <mat-card appearance="outlined" class="login-card">
+    <div class="login-brand">
+      <mat-icon class="brand-icon">account_balance</mat-icon>
+      <span class="brand-name">Books Standard</span>
+    </div>
+    <div class="login-subtitle">Sign in to continue</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" autocomplete="username" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password"
+               [type]="hidePass ? 'password' : 'text'"
+               autocomplete="current-password" />
+        <button mat-icon-button matSuffix type="button" (click)="hidePass = !hidePass">
+          <mat-icon>{{ hidePass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      @if (error) {
+        <p class="login-error">{{ error }}</p>
+      }
+
+      <button mat-flat-button color="primary" type="submit"
+              class="w-full submit-btn" [disabled]="form.invalid">
+        Sign In
+      </button>
+    </form>
+  </mat-card>
+</div>

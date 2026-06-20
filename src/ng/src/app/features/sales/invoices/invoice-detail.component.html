@@ -1,0 +1,101 @@
+@if (invoice) {
+  <div class="pg">
+
+    <!-- Document header -->
+    <div class="doc-head">
+      <div>
+        <div class="doc-number">{{ invoice.number }}</div>
+        <div class="doc-contact muted">{{ invoice.contactName }}</div>
+      </div>
+      <div class="doc-head-right">
+        <app-status-badge [status]="invoice.status" />
+        <div class="doc-actions">
+          <button mat-stroked-button>Edit</button>
+          <button mat-stroked-button>Send</button>
+          <button mat-stroked-button>Void</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meta strip -->
+    <div class="meta-strip">
+      <div class="meta-dates">
+        <div class="meta-item">
+          <span class="meta-label">Issue Date</span>
+          <span class="meta-val">{{ invoice.date | formatDate }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Due Date</span>
+          <span class="meta-val" [class.overdue]="amounts.amountDue > 0 && dueMeta.isOverdue">
+            {{ invoice.dueDate | formatDate }}
+          </span>
+        </div>
+      </div>
+      <div class="meta-sep"></div>
+      <div class="meta-amounts">
+        <div class="meta-item">
+          <span class="meta-label">Subtotal</span>
+          <span class="meta-val num">{{ invoice.subtotal | formatMoney }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Tax</span>
+          <span class="meta-val num">{{ invoice.tax | formatMoney }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Total</span>
+          <span class="meta-val num">{{ invoice.total | formatMoney }}</span>
+        </div>
+        <div class="meta-item amount-due">
+          <span class="meta-label">Amount Due</span>
+          <span class="meta-val num" [class.overdue]="dueMeta.isOverdue">
+            {{ amounts.amountDue | formatMoney }}
+          </span>
+          @if (dueMeta.dueLabel) {
+            <span class="due-sub muted" [class.overdue]="dueMeta.isOverdue">
+              {{ dueMeta.dueLabel }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <mat-card appearance="outlined" class="section-card">
+      <div class="section-label">Line Items</div>
+      <table mat-table [dataSource]="invoice.lines" class="w-full">
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Item / Description</th>
+          <td mat-cell *matCellDef="let l">
+            <div>{{ l.description }}</div>
+            @if (l.itemCode) { <div class="item-code">{{ l.itemCode }}</div> }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef class="num">Qty</th>
+          <td mat-cell *matCellDef="let l" class="num muted">{{ l.quantity }}</td>
+        </ng-container>
+        <ng-container matColumnDef="unitPrice">
+          <th mat-header-cell *matHeaderCellDef class="num">Unit Price</th>
+          <td mat-cell *matCellDef="let l" class="num muted">{{ l.unitPrice | formatMoney }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef class="num">Amount</th>
+          <td mat-cell *matCellDef="let l" class="num">{{ l.amount | formatMoney }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="lineCols"></tr>
+        <tr mat-row *matRowDef="let _; columns: lineCols"></tr>
+      </table>
+      <div class="line-totals">
+        <span class="muted">Subtotal&nbsp;<strong>{{ invoice.subtotal | formatMoney }}</strong></span>
+        <span class="muted">Tax&nbsp;<strong>{{ invoice.tax | formatMoney }}</strong></span>
+        <span>Total&nbsp;<strong>{{ invoice.total | formatMoney }}</strong></span>
+      </div>
+    </mat-card>
+
+    <!-- Related Documents (grouped) -->
+    <app-document-links-section [groups]="docGroups" />
+
+  </div>
+} @else {
+  <div class="pg"><p class="muted">Invoice not found.</p></div>
+}

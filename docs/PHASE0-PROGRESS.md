@@ -36,7 +36,20 @@
 - Line items 表格（Item 代码、收入科目、Tracked 标记）
 - **Payments & allocations** 表格（保留 Card + 表格，含 Record payment）
 
-组件：`components/sales/InvoiceRelatedLinks.tsx`
+组件：`components/sales/invoice/`（统一只读发票展示）
+
+| 组件 | 职责 |
+|------|------|
+| `InvoiceDocumentView` | 只读发票整体布局（组合入口） |
+| `InvoiceDetailHeader` | 编号、状态、客户、到期 |
+| `InvoiceKpiStrip` | Amount due / Total / Paid / 日期 |
+| `InvoiceRelatedLinks` | Source + Delivery 轻列表 |
+| `InvoiceLineItemsTable` | 行项目表格 + `LineItemTotals` |
+| `InvoicePaymentsSection` | 收款分配表格 |
+
+数据/helpers：`lib/invoiceDocument.ts`（allocations、amount due、KPI 配置）
+
+新建页 `/sales/invoices/new` 行项目合计复用 `LineItemTotals`。
 
 ### Item 主数据
 

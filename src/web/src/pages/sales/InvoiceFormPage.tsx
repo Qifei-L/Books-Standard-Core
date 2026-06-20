@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { DetailBreadcrumb } from '@/components/shared/DocumentDetail'
+import { DetailBreadcrumb, LineItemTotals } from '@/components/shared/DocumentDetail'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { MoneyDisplay } from '@/components/shared/MoneyDisplay'
 import { ItemPicker } from '@/components/sales/ItemPicker'
 import { TrackedItemsNotice } from '@/components/sales/TrackedItemsNotice'
 import { ItemTypeBadge } from '@/components/products/ItemTypeBadge'
@@ -273,24 +272,12 @@ export function InvoiceFormPage() {
               </TableBody>
             </Table>
           </div>
-          <div className="flex justify-end border-t border-border px-4 py-4">
-            <dl className="w-full max-w-xs space-y-1 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="tabular-nums font-medium">{formatMoney(subtotal)}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Tax (10%)</dt>
-                <dd className="tabular-nums font-medium">{formatMoney(tax)}</dd>
-              </div>
-              <div className="flex justify-between gap-4 border-t border-border pt-1.5">
-                <dt className="font-medium">Total</dt>
-                <dd className="tabular-nums font-semibold">
-                  <MoneyDisplay amount={total} />
-                </dd>
-              </div>
-            </dl>
-          </div>
+          <LineItemTotals
+            subtotal={subtotal}
+            tax={tax}
+            total={total}
+            taxLabel="Tax (10%)"
+          />
         </CardContent>
       </Card>
 

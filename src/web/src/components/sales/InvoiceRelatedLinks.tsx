@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { quotations, salesOrders } from '@/data/mock'
 import { ShipmentStatusBadge } from '@/components/stock/StockStatusBadges'
 import {
   getDeliveryNotesForInvoice,
@@ -7,12 +7,11 @@ import {
   shipmentStatusLabel,
 } from '@/lib/stockDocuments'
 import { cn, formatDate } from '@/lib/utils'
-import type { Invoice, Quotation, SalesOrder } from '@/types'
+import type { Invoice } from '@/types'
+import { Link } from 'react-router-dom'
 
 interface InvoiceRelatedLinksProps {
   invoice: Invoice
-  quotation?: Quotation
-  order?: SalesOrder
 }
 
 function RelatedRow({
@@ -37,11 +36,14 @@ function RelatedRow({
   )
 }
 
-export function InvoiceRelatedLinks({
-  invoice,
-  quotation,
-  order,
-}: InvoiceRelatedLinksProps) {
+export function InvoiceRelatedLinks({ invoice }: InvoiceRelatedLinksProps) {
+  const quotation = invoice.quotationId
+    ? quotations.find((q) => q.id === invoice.quotationId)
+    : undefined
+  const order = invoice.salesOrderId
+    ? salesOrders.find((so) => so.id === invoice.salesOrderId)
+    : undefined
+
   const deliveryNotes = getDeliveryNotesForInvoice(invoice.id)
   const shipmentStatus = getInvoiceShipmentStatus(invoice)
   const hasSource = Boolean(quotation || order)

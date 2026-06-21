@@ -1,0 +1,74 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Books Standard · Design token system
+   Tier 1 → Tier 2 → components only reference Tier 2
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Tier 1 · Raw palette ────────────────────────────────────────────────────
+   The ONLY place in the project where hex values are allowed.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* —— Scheme A · Finance —— */
+  --fin-navy-900: #172033; --fin-blue-700: #23407A; --fin-blue-500: #2F5DA8;
+  --fin-gray-50:  #F3F5F8; --fin-gray-100: #EEF1F5; --fin-white:   #FFFFFF;
+  --fin-gray-200: #DDE3EA; --fin-gray-300: #C8D0DA;
+  --fin-ink-900:  #1E2733; --fin-ink-500:  #667085; --fin-ink-300: #98A2B3;
+  --fin-amber-600:#B7791F; --fin-green-700:#047857; --fin-red-700:  #B42318;
+
+  /* —— Scheme E · Indigo —— */
+  --ind-indigo-900:#1E1B4B; --ind-indigo-800:#312E81; --ind-indigo-600:#4F46E5;
+  --ind-gray-50:  #F7F7FB;  --ind-gray-100: #EFEFF6; --ind-white:    #FFFFFF;
+  --ind-gray-200: #E4E4ED;  --ind-gray-300: #CFCFE0;
+  --ind-ink-900:  #1E1B2E;  --ind-ink-500:  #54526B; --ind-ink-300:  #9795AD;
+  --ind-amber-600:#B45309;  --ind-green-700:#047857; --ind-red-700:  #B91C1C;
+
+  /* Row-hover and focus-ring raw values for each theme (no palette equivalent) */
+  --fin-row-hover:   #E8EDF3;
+  --fin-focus-ring:  rgba(47, 93, 168, .35);
+  --ind-row-hover:   #E7E7F1;
+  --ind-focus-ring:  rgba(79, 70, 229, .35);
+}
+
+/* ── Tier 2 · Semantic roles ─────────────────────────────────────────────────
+   Components must only reference this layer.
+   Switching theme = remapping this layer; components need zero changes.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root,
+[data-theme="finance"] {
+  --c-header:        var(--fin-navy-900);
+  --c-action:        var(--fin-blue-500);
+  --c-bg-page:       var(--fin-gray-50);
+  --c-bg-workspace:  var(--fin-gray-100);
+  --c-surface:       var(--fin-white);
+  --c-border:        var(--fin-gray-200);
+  --c-border-strong: var(--fin-gray-300);
+  --c-text:          var(--fin-ink-900);
+  --c-text-muted:    var(--fin-ink-500);
+  --c-success:       var(--fin-green-700);
+  --c-warning:       var(--fin-amber-600);
+  --c-danger:        var(--fin-red-700);
+  --c-info:          var(--fin-blue-500);
+  --c-row-hover:     var(--fin-row-hover);
+  --c-focus-ring:    var(--fin-focus-ring);
+  --c-disabled-bg:   var(--fin-gray-100);
+  --c-disabled-text: var(--fin-ink-300);
+}
+
+[data-theme="indigo"] {
+  --c-header:        var(--ind-indigo-900);
+  --c-action:        var(--ind-indigo-600);
+  --c-bg-page:       var(--ind-gray-50);
+  --c-bg-workspace:  var(--ind-gray-100);
+  --c-surface:       var(--ind-white);
+  --c-border:        var(--ind-gray-200);
+  --c-border-strong: var(--ind-gray-300);
+  --c-text:          var(--ind-ink-900);
+  --c-text-muted:    var(--ind-ink-500);
+  --c-success:       var(--ind-green-700);
+  --c-warning:       var(--ind-amber-600);
+  --c-danger:        var(--ind-red-700);
+  --c-info:          var(--ind-indigo-600);
+  --c-row-hover:     var(--ind-row-hover);
+  --c-focus-ring:    var(--ind-focus-ring);
+  --c-disabled-bg:   var(--ind-gray-100);
+  --c-disabled-text: var(--ind-ink-300);
+}

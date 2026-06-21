@@ -241,5 +241,10 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'tokens-demo',
+    loadComponent: () =>
+      import('./features/_tokens-demo/tokens-demo.component').then((m) => m.TokensDemoComponent),
+  },
   { path: '**', redirectTo: '' },
 ]

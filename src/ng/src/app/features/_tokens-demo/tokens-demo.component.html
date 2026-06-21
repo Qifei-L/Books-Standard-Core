@@ -1,0 +1,125 @@
+<div style="min-height:100vh; background:var(--c-bg-page); font-family:'IBM Plex Sans',sans-serif; color:var(--c-text)">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
+  <header style="background:var(--c-header); color:#fff; height:52px; display:flex; align-items:center; padding:0 24px; gap:16px">
+    <span style="font-weight:600; font-size:15px; letter-spacing:.01em">Books Standard</span>
+    <span style="flex:1"></span>
+
+    <!-- Theme switcher -->
+    <div style="display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.12); border-radius:6px; padding:3px">
+      <button
+        (click)="setTheme('finance')"
+        [style.background]="theme() === 'finance' ? 'rgba(255,255,255,.22)' : 'transparent'"
+        style="border:none; color:#fff; font-family:inherit; font-size:12px; font-weight:500; padding:4px 10px; border-radius:4px; cursor:pointer; transition:background .15s">
+        Finance
+      </button>
+      <button
+        (click)="setTheme('indigo')"
+        [style.background]="theme() === 'indigo' ? 'rgba(255,255,255,.22)' : 'transparent'"
+        style="border:none; color:#fff; font-family:inherit; font-size:12px; font-weight:500; padding:4px 10px; border-radius:4px; cursor:pointer; transition:background .15s">
+        Indigo
+      </button>
+    </div>
+  </header>
+
+  <div style="display:flex; height:calc(100vh - 52px)">
+
+    <!-- ── Sidebar ───────────────────────────────────────────────────────── -->
+    <nav style="width:200px; background:var(--c-surface); border-right:1px solid var(--c-border); padding:16px 8px; flex-shrink:0">
+      @for (item of ['仪表盘','应收账款','应付账款','银行对账','产品','报表']; track item; let i = $index) {
+        <div [style.background]="i === 1 ? 'var(--c-action)' : 'transparent'"
+             [style.color]="i === 1 ? '#fff' : 'var(--c-text-muted)'"
+             style="padding:8px 12px; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer; margin-bottom:2px; transition:background .1s">
+          {{ item }}
+        </div>
+      }
+    </nav>
+
+    <!-- ── Main area ─────────────────────────────────────────────────────── -->
+    <main style="flex:1; overflow:auto; padding:28px 32px; background:var(--c-bg-workspace)">
+
+      <!-- Page header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
+        <div>
+          <h1 style="margin:0; font-size:20px; font-weight:600; color:var(--c-text)">应收账款</h1>
+          <p style="margin:4px 0 0; font-size:13px; color:var(--c-text-muted)">发票管理与付款追踪</p>
+        </div>
+        <button
+          style="background:var(--c-action); color:#fff; border:none; font-family:inherit; font-size:13px; font-weight:500; padding:0 18px; height:36px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:opacity .15s"
+          onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          新建发票
+        </button>
+      </div>
+
+      <!-- KPI cards -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px">
+        @for (kpi of [
+          { label: '应收总额', value: '¥ 323,420', sub: '4 张未结清发票' },
+          { label: '本月已收', value: '¥ 16,500',  sub: '较上月 +12%' },
+          { label: '逾期金额', value: '¥ 3,520',   sub: '1 张逾期发票',   danger: true },
+          { label: '待审凭证', value: '3',          sub: '需要审核',        warn: true }
+        ]; track kpi.label) {
+          <div style="background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; padding:18px 20px">
+            <div style="font-size:12px; font-weight:500; color:var(--c-text-muted); letter-spacing:.04em; text-transform:uppercase; margin-bottom:10px">{{ kpi.label }}</div>
+            <div style="font-size:22px; font-weight:600; font-family:'IBM Plex Mono',monospace"
+                 [style.color]="kpi.danger ? 'var(--c-danger)' : kpi.warn ? 'var(--c-warning)' : 'var(--c-text)'">
+              {{ kpi.value }}
+            </div>
+            <div style="font-size:12px; margin-top:4px; color:var(--c-text-muted)">{{ kpi.sub }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- Invoice table -->
+      <div style="background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; overflow:hidden">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--c-border); display:flex; align-items:center; justify-content:space-between">
+          <span style="font-size:14px; font-weight:600; color:var(--c-text)">发票列表</span>
+          <span style="font-size:12px; color:var(--c-text-muted)">共 {{ invoices.length }} 张</span>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px">
+          <thead>
+            <tr style="background:var(--c-bg-workspace)">
+              @for (h of ['发票号','客户','开具日期','到期日','金额','状态']; track h) {
+                <th style="text-align:left; padding:10px 20px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--c-text-muted); border-bottom:1px solid var(--c-border)">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (inv of invoices; track inv.number) {
+              <tr style="border-bottom:1px solid var(--c-border); transition:background .1s"
+                  onmouseover="this.style.background='var(--c-row-hover)'"
+                  onmouseout="this.style.background='transparent'">
+                <td style="padding:13px 20px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--c-action); font-weight:500">{{ inv.number }}</td>
+                <td style="padding:13px 20px; font-weight:500; color:var(--c-text)">{{ inv.customer }}</td>
+                <td style="padding:13px 20px; font-family:'IBM Plex Mono',monospace; color:var(--c-text-muted)">{{ inv.date }}</td>
+                <td style="padding:13px 20px; font-family:'IBM Plex Mono',monospace; color:var(--c-text-muted)"
+                    [style.color]="inv.status === 'overdue' ? 'var(--c-danger)' : 'var(--c-text-muted)'">{{ inv.due }}</td>
+                <td style="padding:13px 20px; font-family:'IBM Plex Mono',monospace; text-align:right; font-weight:600; color:var(--c-text)">¥ {{ inv.amount.toLocaleString() }}</td>
+                <td style="padding:13px 20px">
+                  <span [ngStyle]="badgeStyle(inv.status)" style="display:inline-flex; align-items:center; border-radius:99px; padding:3px 10px; font-size:11px; font-weight:600; letter-spacing:.03em">
+                    {{ statusLabel(inv.status) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Token legend -->
+      <div style="margin-top:32px; background:var(--c-surface); border:1px solid var(--c-border); border-radius:8px; padding:20px">
+        <div style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--c-text-muted); margin-bottom:16px">语义 token 色板 (切换主题验证换肤)</div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px">
+          @for (tok of tokenSwatches; track tok.name) {
+            <div style="display:flex; align-items:center; gap:8px; background:var(--c-bg-workspace); border-radius:6px; padding:8px 12px">
+              <div [style.background]="tok.val" style="width:24px; height:24px; border-radius:4px; border:1px solid var(--c-border)"></div>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--c-text-muted)">{{ tok.name }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>

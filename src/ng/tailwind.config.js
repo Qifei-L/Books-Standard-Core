@@ -4,8 +4,22 @@ module.exports = {
   corePlugins: { preflight: false },
   theme: {
     extend: {
-      // ── shadcn/ui CSS-variable tokens ──────────────────────────────────────
       colors: {
+        // ── Semantic design-token aliases (theme-switchable via data-theme) ───
+        header:    'var(--c-header)',
+        action:    'var(--c-action)',
+        page:      'var(--c-bg-page)',
+        workspace: 'var(--c-bg-workspace)',
+        surface:   'var(--c-surface)',
+        'border-base':   'var(--c-border)',
+        'border-strong': 'var(--c-border-strong)',
+        text: { DEFAULT: 'var(--c-text)', muted: 'var(--c-text-muted)' },
+        success:   'var(--c-success)',
+        warning:   'var(--c-warning)',
+        danger:    'var(--c-danger)',
+        info:      'var(--c-info)',
+
+        // ── shadcn/ui CSS-variable tokens ──────────────────────────────────
         border:     'hsl(var(--border))',
         input:      'hsl(var(--input))',
         ring:       'hsl(var(--ring))',

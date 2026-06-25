@@ -1,43 +1,87 @@
-import { Component, inject } from '@angular/core'
-import { MatCardModule } from '@angular/material/card'
-import { MatTableModule } from '@angular/material/table'
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
+import { RouterLink } from '@angular/router'
 import { DataService } from '../../core/data/data.service'
 import { FormatMoneyPipe } from '../../shared/pipes/format-money.pipe'
+
+type StatusTab = 'all' | 'active' | 'archived'
+
+const CATEGORY_ORDER = ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense'] as const
+const CATEGORY_LABEL: Record<string, string> = {
+  Asset:     'Assets',
+  Liability: 'Liabilities',
+  Equity:    'Equity',
+  Revenue:   'Revenue',
+  Expense:   'Expenses',
+}
 
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [MatCardModule, MatTableModule, FormatMoneyPipe],
-  template: `
-    <div class="page-container">
-      <div class="page-header"><h1>Chart of Accounts</h1></div>
-      <mat-card appearance="outlined">
-        <table mat-table [dataSource]="data.accounts" class="full-width">
-          <ng-container matColumnDef="code">
-            <th mat-header-cell *matHeaderCellDef>Code</th>
-            <td mat-cell *matCellDef="let r">{{ r.code }}</td>
-          </ng-container>
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let r">{{ r.name }}</td>
-          </ng-container>
-          <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef>Type</th>
-            <td mat-cell *matCellDef="let r">{{ r.type }}</td>
-          </ng-container>
-          <ng-container matColumnDef="balance">
-            <th mat-header-cell *matHeaderCellDef class="num-h">Balance</th>
-            <td mat-cell *matCellDef="let r" class="num-c">{{ r.balance | formatMoney }}</td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let r; columns: cols"></tr>
-        </table>
-      </mat-card>
-    </div>
-  `,
-  styles: [`.full-width{width:100%} .num-h,.num-c{text-align:right}`],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, FormatMoneyPipe],
+  templateUrl: './chart-of-accounts.component.html',
 })
 export class ChartOfAccountsComponent {
-  readonly data = inject(DataService)
-  cols = ['code', 'name', 'type', 'balance']
+  private data = inject(DataService)
+
+  search    = signal('')
+  statusTab = signal<StatusTab>('all')
+  typeFilter = signal('all')
+  collapsed = signal<Set<string>>(new Set())
+
+  subtypes = computed(() => {
+    const all = this.data.accounts.map(a => a.subtype)
+    return [...new Set(all)].sort()
+  })
+
+  filtered = computed(() => {
+    const q   = this.search().toLowerCase()
+    const tab = this.statusTab()
+    const typ = this.typeFilter()
+    return this.data.accounts.filter(a => {
+      if (tab !== 'all' && a.status !== tab) return false
+      if (typ !== 'all' && a.subtype !== typ) return false
+      if (q && !a.code.toLowerCase().includes(q) && !a.name.toLowerCase().includes(q)) return false
+      return true
+    })
+  })
+
+  groups = computed(() => {
+    const rows = this.filtered()
+    return CATEGORY_ORDER
+      .map(cat => ({
+        key:      cat,
+        label:    CATEGORY_LABEL[cat],
+        accounts: rows.filter(a => a.type === cat).sort((a, b) => a.code.localeCompare(b.code)),
+      }))
+      .filter(g => g.accounts.length > 0)
+  })
+
+  total    = computed(() => this.data.accounts.length)
+  active   = computed(() => this.data.accounts.filter(a => a.status === 'active').length)
+  archived = computed(() => this.data.accounts.filter(a => a.status === 'archived').length)
+
+  allCollapsed = computed(() => this.groups().every(g => this.collapsed().has(g.key)))
+
+  isCollapsed(key: string) { return this.collapsed().has(key) }
+
+  toggleGroup(key: string) {
+    this.collapsed.update(s => {
+      const next = new Set(s)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
+  }
+
+  toggleAll() {
+    if (this.allCollapsed()) {
+      this.collapsed.set(new Set())
+    } else {
+      this.collapsed.set(new Set(this.groups().map(g => g.key)))
+    }
+  }
+
+  setSearch(v: string)    { this.search.set(v) }
+  setTab(t: StatusTab)    { this.statusTab.set(t) }
+  setType(v: string)      { this.typeFilter.set(v) }
 }

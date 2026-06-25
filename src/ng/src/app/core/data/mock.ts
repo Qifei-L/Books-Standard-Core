@@ -15,15 +15,31 @@ export const contacts: Contact[] = [
 ]
 
 export const accounts: Account[] = [
-  { id: 'a1', code: '1000', name: '工商银行', type: 'Asset', balance: 45230 },
-  { id: 'a2', code: '1100', name: '应收账款', type: 'Asset', balance: 8800 },
-  { id: 'a3', code: '2000', name: '应付账款', type: 'Liability', balance: 3200 },
-  { id: 'a4', code: '3000', name: '实收资本', type: 'Equity', balance: 50000 },
-  { id: 'a5', code: '4000', name: '销售收入', type: 'Revenue', balance: -125000 },
-  { id: 'a6', code: '5000', name: '办公费用', type: 'Expense', balance: 18200 },
-  { id: 'a7', code: '5100', name: '租金', type: 'Expense', balance: 36000 },
-  { id: 'a8', code: '1200', name: '库存商品', type: 'Asset', balance: 88000 },
-  { id: 'a9', code: '5200', name: '销售成本', type: 'Expense', balance: 42000 },
+  // Assets
+  { id: 'a1',  code: '1000', name: '工商银行',      type: 'Asset',     subtype: 'Bank',               taxRate: '免税 (0%)',    status: 'active',   balance: 45230   },
+  { id: 'a10', code: '1001', name: '建设银行备用户', type: 'Asset',     subtype: 'Bank',               taxRate: '免税 (0%)',    status: 'active',   balance: 12800   },
+  { id: 'a2',  code: '1100', name: '应收账款',      type: 'Asset',     subtype: 'Accounts Receivable', taxRate: '不含税',      status: 'active',   balance: 8800    },
+  { id: 'a11', code: '1150', name: '预付款项',      type: 'Asset',     subtype: 'Current Asset',      taxRate: '免税 (0%)',    status: 'active',   balance: 4200    },
+  { id: 'a8',  code: '1200', name: '库存商品',      type: 'Asset',     subtype: 'Inventory Asset',    taxRate: '采购税 (13%)', status: 'active',   balance: 88000   },
+  { id: 'a12', code: '1500', name: '办公设备',      type: 'Asset',     subtype: 'Fixed Asset',        taxRate: '采购税 (13%)', status: 'active',   balance: 18600   },
+  { id: 'a13', code: '1510', name: '电脑设备',      type: 'Asset',     subtype: 'Fixed Asset',        taxRate: '采购税 (13%)', status: 'archived', balance: 9450    },
+  // Liabilities
+  { id: 'a3',  code: '2000', name: '应付账款',      type: 'Liability', subtype: 'Accounts Payable',   taxRate: '不含税',      status: 'active',   balance: 3200    },
+  { id: 'a14', code: '2100', name: '应交增值税',    type: 'Liability', subtype: 'Current Liability',  taxRate: '免税 (0%)',    status: 'active',   balance: 6890    },
+  { id: 'a15', code: '2110', name: '应付职工薪酬',  type: 'Liability', subtype: 'Current Liability',  taxRate: '免税 (0%)',    status: 'active',   balance: 3120    },
+  { id: 'a16', code: '2500', name: '长期借款',      type: 'Liability', subtype: 'Liability',          taxRate: '免税 (0%)',    status: 'active',   balance: 75000   },
+  // Equity
+  { id: 'a4',  code: '3000', name: '实收资本',      type: 'Equity',    subtype: 'Equity',             taxRate: '免税 (0%)',    status: 'active',   balance: 50000   },
+  { id: 'a17', code: '3100', name: '未分配利润',    type: 'Equity',    subtype: 'Retained Earnings',  taxRate: '免税 (0%)',    status: 'active',   balance: 22580   },
+  // Revenue
+  { id: 'a5',  code: '4000', name: '销售收入',      type: 'Revenue',   subtype: 'Revenue',            taxRate: '增值税 (13%)', status: 'active',   balance: -125000 },
+  { id: 'a18', code: '4100', name: '服务收入',      type: 'Revenue',   subtype: 'Revenue',            taxRate: '增值税 (6%)',  status: 'active',   balance: -38400  },
+  // Expenses
+  { id: 'a6',  code: '5000', name: '办公费用',      type: 'Expense',   subtype: 'Expense',            taxRate: '采购税 (13%)', status: 'active',   balance: 18200   },
+  { id: 'a7',  code: '5100', name: '租金',          type: 'Expense',   subtype: 'Expense',            taxRate: '免税 (0%)',    status: 'active',   balance: 36000   },
+  { id: 'a9',  code: '5200', name: '销售成本',      type: 'Expense',   subtype: 'Direct Costs',       taxRate: '采购税 (13%)', status: 'active',   balance: 42000   },
+  { id: 'a19', code: '5300', name: '工资薪酬',      type: 'Expense',   subtype: 'Expense',            taxRate: '免税 (0%)',    status: 'active',   balance: 96000   },
+  { id: 'a20', code: '5400', name: '差旅费',        type: 'Expense',   subtype: 'Expense',            taxRate: '采购税 (6%)',  status: 'active',   balance: 8760    },
 ]
 
 export const items: Item[] = [

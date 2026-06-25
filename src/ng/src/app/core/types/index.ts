@@ -41,6 +41,9 @@ export interface Account {
   code: string
   name: string
   type: 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense'
+  subtype: string
+  taxRate: string
+  status: 'active' | 'archived'
   balance: Money
 }
 

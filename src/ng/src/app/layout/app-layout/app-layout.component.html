@@ -1,28 +1,38 @@
 <mat-sidenav-container class="shell">
   <mat-sidenav mode="side" opened class="sidenav">
-    <div class="brand">
-      <mat-icon class="brand-icon">account_balance</mat-icon>
-      <span class="brand-text">Books Standard</span>
+
+    <!-- Brand -->
+    <div class="brand-area">
+      <div class="brand-icon-wrap">
+        <mat-icon>account_balance</mat-icon>
+      </div>
+      <span class="brand-name">Books Standard</span>
     </div>
 
-    <mat-nav-list class="nav-list" disableRipple>
+    <!-- Nav -->
+    <nav class="nav-section">
       @for (item of sidebarNav; track item.to) {
-        <a mat-list-item
-           [routerLink]="item.to"
+        <a [routerLink]="item.to"
            routerLinkActive="nav-active"
-           [routerLinkActiveOptions]="item.to === '/' ? {exact:true} : {exact:false}">
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
+           [routerLinkActiveOptions]="item.to === '/' ? {exact:true} : {exact:false}"
+           class="nav-item">
+          <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+          <span class="nav-label">{{ item.label }}</span>
         </a>
       }
-    </mat-nav-list>
+    </nav>
 
-    <div class="sidenav-footer">
-      <span class="company">{{ data.companyName }}</span>
-      <button mat-icon-button (click)="logout()" title="Sign out">
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <div class="footer-info">
+        <span class="company-name">{{ data.companyName }}</span>
+        <span class="fiscal-year">FY26</span>
+      </div>
+      <button type="button" class="logout-btn" (click)="logout()" title="Sign out">
         <mat-icon>logout</mat-icon>
       </button>
     </div>
+
   </mat-sidenav>
 
   <mat-sidenav-content class="main-area">

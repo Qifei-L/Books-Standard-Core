@@ -1,9 +1,7 @@
 import { Component, inject } from '@angular/core'
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 import { MatSidenavModule } from '@angular/material/sidenav'
-import { MatListModule } from '@angular/material/list'
 import { MatIconModule } from '@angular/material/icon'
-import { MatButtonModule } from '@angular/material/button'
 import { sidebarNav } from '../../core/navigation'
 import { AuthService } from '../../core/auth/auth.service'
 import { DataService } from '../../core/data/data.service'
@@ -13,7 +11,7 @@ import { DataService } from '../../core/data/data.service'
   standalone: true,
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    MatSidenavModule, MatListModule, MatIconModule, MatButtonModule,
+    MatSidenavModule, MatIconModule,
   ],
   templateUrl: './app-layout.component.html',
   styleUrl: './app-layout.component.scss',

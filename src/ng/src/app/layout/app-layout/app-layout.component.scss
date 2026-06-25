@@ -1,91 +1,153 @@
 .shell {
   height: 100vh;
-  background: #e7e5df;
+  background: var(--c-bg-workspace);
 }
 
 .sidenav {
-  width: 224px;
-  border-right: 1px solid #cfc9ba;
+  width: 232px;
   display: flex;
   flex-direction: column;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .25)),
-    #faf8f2;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-border) !important;
 }
 
-.brand {
+.brand-area {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 60px;
-  padding: 0 18px;
-  border-bottom: 1px solid #e7e2d6;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--c-border);
   flex-shrink: 0;
 }
-.brand-icon {
+
+.brand-icon-wrap {
   display: grid;
   place-items: center;
-  color: #2b3566;
-  background: #eef0f8;
-  border: 1px solid rgba(43, 53, 102, .18);
-  border-radius: 7px;
-  font-size: 18px;
   width: 28px;
   height: 28px;
-}
-.brand-text  {
-  font-weight: 700;
-  font-size: 14px;
-  color: #26282f;
-  letter-spacing: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--c-action) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-action) 22%, transparent);
+  color: var(--c-action);
+  flex-shrink: 0;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
 }
 
-.nav-list {
+.brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text);
+  letter-spacing: -0.01em;
+}
+
+.nav-section {
   flex: 1;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
 }
 
-.nav-list a[mat-list-item] {
-  height: 42px !important;
-  margin-bottom: 3px;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-text-muted);
   border: 1px solid transparent;
-  border-radius: 7px;
-  color: #5a5e68 !important;
+  transition: background 0.12s, color 0.12s;
+
+  .nav-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: inherit;
+  }
+
+  .nav-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--c-text) 6%, transparent);
+    color: var(--c-text);
+  }
+
+  &.nav-active {
+    background: color-mix(in srgb, var(--c-action) 10%, transparent);
+    color: var(--c-action);
+    border-color: color-mix(in srgb, var(--c-action) 22%, transparent);
+
+    .nav-icon { color: var(--c-action); }
+  }
 }
 
-.nav-list a[mat-list-item]:hover {
-  background: rgba(237, 232, 223, .55) !important;
-}
-
-.nav-list .mat-icon {
-  color: #8b8f99;
-}
-
-.sidenav-footer {
+.sidebar-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 58px;
-  padding: 0 14px 0 16px;
-  border-top: 1px solid #e7e2d6;
+  padding: 0 14px;
+  min-height: 52px;
+  border-top: 1px solid var(--c-border);
   flex-shrink: 0;
 }
-.company { font-size: 12px; color: #5a5e68; font-weight: 600; }
 
-.sidenav-footer button {
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.company-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fiscal-year {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.logout-btn {
+  display: grid;
+  place-items: center;
   width: 32px;
   height: 32px;
-  border: 1px solid #e7e2d6;
   border-radius: 7px;
-  background: rgba(255, 255, 255, .45);
-  color: #5a5e68;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+
+  &:hover {
+    background: color-mix(in srgb, var(--c-text) 6%, transparent);
+    color: var(--c-text);
+  }
 }
 
 .main-area {
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(120% 70% at 50% -15%, rgba(255, 255, 255, .62), transparent 58%),
-    #e7e5df;
+  background: var(--c-bg-workspace);
   overflow-y: auto;
 }
